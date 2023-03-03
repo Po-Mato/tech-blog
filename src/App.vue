@@ -34,20 +34,92 @@ export default {
       width: window.innerWidth,
       height: window.innerHeight,
     };
-    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
-    camera.position.z = 2;
+    const camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 0.1, 2000 );
+    camera.position.x = 100;
     scene.add(camera);
+    
+    // 배경 넣기
+    // const loader = new THREE.TextureLoader();
+    // loader.load(
+    //   // URL
+    //   './public/milkyway.jpg',
+    //   // 콜백 함수
+    //   function (texture) {
+    //     // 장면의 배경에 텍스처 할당
+    //     scene.background = texture;
+    //   }
+    // );
 
     const renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setSize( sizes.width, sizes.height );
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(new THREE.Color("#21282a"), 1);
     container.appendChild( renderer.domElement );
+    
+    var texture = new THREE.TextureLoader().load('./public/milkyway.jpg');
+    var material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
+    var sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1000, 20, 20),
+      material
+    );
+    scene.add(sphere);
 
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.minDistance = 1;
-    controls.maxDistance = 500;
+    controls.maxDistance = 1000;
 
+    // const size = 100;
+    // const divisions = 100;
+    // const gridHelper = new THREE.GridHelper( size, divisions );
+    // scene.add( gridHelper );
+
+    const drawStar = (option) => {
+      const vertices = [];
+      const getRandomSphere = (radius) => {
+        let x, y, z;
+        do {
+          x = Math.random() * 2 - 1;
+          y = Math.random() * 2 - 1;
+          z = Math.random() * 2 - 1;
+        } while (x ** 2 + y ** 2 + z ** 2 > 1);
+
+        const norm = 1 - Math.sqrt(x * x + y * y + z * z);
+        return [x / norm * radius, y / norm * radius, z / norm * radius];
+      };
+      for ( let i = 0; i < option.count; i ++ ) {
+        const points = getRandomSphere(10);
+        vertices.push( ...points );
+      }
+      
+      let canvas = document.createElement("canvas");
+      let ctx = canvas.getContext("2d");
+      canvas.height = 100;
+      canvas.width = 100;
+      ctx.fillStyle = option.color;
+      ctx.beginPath();
+      ctx.arc(50, 50, 25, 0, 2 * Math.PI);
+      ctx.fill();
+      let img = canvas.toDataURL("image/png");
+      const loader = new THREE.TextureLoader();
+      const star = loader.load(img);
+
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+      const material = new THREE.PointsMaterial({
+        size: option.size,
+        map: star,
+        transparent: true,
+      });
+      const points = new THREE.Points( geometry, material );
+      scene.add( points );
+    };
+    drawStar({ color: '#BFDFFF', count: 1000, size: 1.0 });
+    drawStar({ color: '#DFEFFF', count: 1000, size: 0.9 });
+    drawStar({ color: '#FFFFFF', count: 1000, size: 0.8 });
+    drawStar({ color: '#FFDFBF', count: 1000, size: 0.7 });
+    drawStar({ color: '#FFBF7F', count: 1000, size: 0.6 });
+
+    /*
     // const geometry = new THREE.BoxGeometry();
     // const material = new THREE.MeshBasicMaterial( { color: 0x00ff80 } );
     // const cube = new THREE.Mesh( geometry, material );
@@ -97,168 +169,23 @@ export default {
 
     const particlesMesh = new THREE.Points(particlesGeometry, particlesmaterial);
     scene.add(particlesMesh);
+    */
 
+    let nRotate = 0;
     const animate = () => {
       requestAnimationFrame(animate);
+      camera.position.x = Math.cos(nRotate) * 100;
+      // camera.position.y = Math.cos(nRotate) * 100;
+      camera.position.z = Math.sin(nRotate) * 100;
+      nRotate += 0.0001;
+      // camera.position.y = Math.sin(0.01) * 100;
+      // camera.position.z = Math.sin(0.01) * 100;
       // cube.rotation.x += 0.01;
       // cube.rotation.y += 0.01;
       controls.update();
       renderer.render(scene, camera);
     }
     animate();
-
-    // let renderer, scene, camera;
-    // let mesh;
-    // let raycaster;
-    // let line;
-
-    // const intersection = {
-    // 	intersects: false,
-    // 	point: new THREE.Vector3(),
-    // 	normal: new THREE.Vector3()
-    // };
-    // const mouse = new THREE.Vector2();
-    // const intersects = [];
-
-    // let mouseHelper;
-
-    // init();
-    // animate();
-
-    // function init() {
-
-    // 	renderer = new THREE.WebGLRenderer( { antialias: true } );
-    // 	renderer.setPixelRatio( window.devicePixelRatio );
-    // 	renderer.setSize( window.innerWidth, window.innerHeight );
-    // 	container.appendChild( renderer.domElement );
-
-    // 	scene = new THREE.Scene();
-
-    // 	camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-    // 	camera.position.z = 120;
-
-    // 	const controls = new OrbitControls( camera, renderer.domElement );
-    // 	controls.minDistance = 50;
-    // 	controls.maxDistance = 200;
-
-    // 	scene.add( new THREE.AmbientLight( 0x443333 ) );
-
-      // const geometry2 = new THREE.BufferGeometry();
-      // geometry2.setFromPoints( [ new THREE.Vector3(), new THREE.Vector3() ] );
-
-      // line = new THREE.Line( geometry2, new THREE.LineBasicMaterial() );
-      // scene.add( line );
-
-      // raycaster = new THREE.Raycaster();
-
-      // mouseHelper = new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 10 ), new THREE.MeshNormalMaterial() );
-      // mouseHelper.visible = false;
-      // scene.add( mouseHelper );
-
-      // const boxWidth = 1, boxHeight = 1, boxDepth = 1;
-      // const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
-      // const material = new THREE.MeshBasicMaterial({color: 0x44aa88});
-      // const cube = new THREE.Mesh(geometry, material);
-      // scene.add(cube);
-
-      // window.addEventListener( 'resize', onWindowResize );
-
-      // let moved = false;
-
-      // controls.addEventListener( 'change', function () {
-
-      // 	moved = true;
-
-      // } );
-
-      // window.addEventListener( 'pointerdown', function () {
-
-      // 	moved = false;
-
-      // } );
-
-      // window.addEventListener( 'pointerup', function ( event ) {
-
-      // 	if ( moved === false ) {
-
-      // 		checkIntersection( event.clientX, event.clientY );
-
-      // 		if ( intersection.intersects ) console.log('test')// shoot();
-
-      // 	}
-
-      // } );
-
-      // window.addEventListener( 'pointermove', onPointerMove );
-
-      // function onPointerMove( event ) {
-
-      // 	if ( event.isPrimary ) {
-
-      // 		checkIntersection( event.clientX, event.clientY );
-
-      // 	}
-
-      // }
-
-      // function checkIntersection( x, y ) {
-
-      // 	if ( mesh === undefined ) return;
-
-      // 	mouse.x = ( x / window.innerWidth ) * 2 - 1;
-      // 	mouse.y = - ( y / window.innerHeight ) * 2 + 1;
-
-      // 	raycaster.setFromCamera( mouse, camera );
-      // 	raycaster.intersectObject( mesh, false, intersects );
-
-      // 	if ( intersects.length > 0 ) {
-
-      // 		const p = intersects[ 0 ].point;
-      // 		mouseHelper.position.copy( p );
-      // 		intersection.point.copy( p );
-
-      // 		const n = intersects[ 0 ].face.normal.clone();
-      // 		n.transformDirection( mesh.matrixWorld );
-      // 		n.multiplyScalar( 10 );
-      // 		n.add( intersects[ 0 ].point );
-
-      // 		intersection.normal.copy( intersects[ 0 ].face.normal );
-      // 		mouseHelper.lookAt( n );
-
-      // 		const positions = line.geometry.attributes.position;
-      // 		positions.setXYZ( 0, p.x, p.y, p.z );
-      // 		positions.setXYZ( 1, n.x, n.y, n.z );
-      // 		positions.needsUpdate = true;
-
-      // 		intersection.intersects = true;
-
-      // 		intersects.length = 0;
-
-      // 	} else {
-
-      // 		intersection.intersects = false;
-
-      // 	}
-
-      // }
-    // }
-
-    // function onWindowResize() {
-
-    // 	camera.aspect = window.innerWidth / window.innerHeight;
-    // 	camera.updateProjectionMatrix();
-
-    // 	renderer.setSize( window.innerWidth, window.innerHeight );
-
-    // }
-
-    // function animate() {
-
-    // 	requestAnimationFrame( animate );
-
-    // 	renderer.render( scene, camera );
-
-    // }
   },
 }
 </script>

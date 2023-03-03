@@ -8,7 +8,7 @@
   export default {
     data() {
       return {
-        msg: 'This is an home page',
+        msg: 'This',
       };
     },
     mounted() {

@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "cypress": "^12.7.0",
     "three": "^0.150.1",
+    "underscore": "^1.13.6",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },
