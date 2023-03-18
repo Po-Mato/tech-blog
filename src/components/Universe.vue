@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { BloomEffect, BlendFunction, KernelSize } from 'postprocessing';
+import smoke from '/smoke.png';
 
 export default {
   data() {
@@ -145,7 +146,7 @@ export default {
     let cloudParticles = [];
     const drawNebula = (option:OptionNebula) => {
       let loader = new THREE.TextureLoader();
-      let texture = loader.load('./public/smoke.png');
+      let texture = loader.load(smoke);
       let cloudGeo = new THREE.PlaneGeometry(option.size, option.size);
       let cloudMaterial = new THREE.MeshLambertMaterial({
         map: texture,
