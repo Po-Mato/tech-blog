@@ -4,7 +4,7 @@
 
 <script lang="ts">
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 import { BloomEffect, BlendFunction, KernelSize } from 'postprocessing';
 
 export default {
@@ -40,7 +40,7 @@ export default {
     renderer.setSize( sizes.width, sizes.height );
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setClearColor(new THREE.Color("#11181a"), 1);
-    container.appendChild( renderer.domElement );
+    container?.appendChild( renderer.domElement );
     
     // var texture = new THREE.TextureLoader().load('./public/milkyway.jpg');
     // var material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.BackSide });
@@ -59,13 +59,18 @@ export default {
     // const gridHelper = new THREE.GridHelper( size, divisions );
     // scene.add( gridHelper );
 
-    const axesHelper = new THREE.AxesHelper( 50 );
-    scene.add( axesHelper );
+    // const axesHelper = new THREE.AxesHelper( 50 );
+    // scene.add( axesHelper );
 
-    let arrPoint = [];
-    const drawStar = (option) => {
+    interface OptionStart {
+      color: string;
+      count: number;
+      size: number;
+    }
+    let arrPoint:object[] = [];
+    const drawStar = (option:OptionStart) => {
       const vertices = [];
-      const getRandomSphere = (radius) => {
+      const getRandomSphere = (radius:number) => {
         let x, y, z;
         do {
           x = Math.random() * 2 - 1;
@@ -76,7 +81,7 @@ export default {
         const norm = 1 - Math.sqrt(x * x + y * y + z * z);
         return [x / norm * radius, y / norm * radius, z / norm * radius];
       };
-      for ( let i = 0; i < option.count; i ++ ) {
+      for ( let i = 0; i < option?.count || 0; i ++ ) {
         const points = getRandomSphere(10);
         vertices.push( ...points );
       }
@@ -133,8 +138,12 @@ export default {
     arrPoint.push(...drawStar({ color: '#FFDFBF', count: 1000, size: 0.7 }));
     arrPoint.push(...drawStar({ color: '#FFBF7F', count: 1000, size: 0.6 }));
 
+    interface OptionNebula {
+      size: number;
+      count: number;
+    }
     let cloudParticles = [];
-    const drawNebula = (option) => {
+    const drawNebula = (option:OptionNebula) => {
       let loader = new THREE.TextureLoader();
       let texture = loader.load('./public/smoke.png');
       let cloudGeo = new THREE.PlaneGeometry(option.size, option.size);
@@ -175,7 +184,7 @@ export default {
     const bloomEffect = new BloomEffect({
       blendFunction: BlendFunction.COLOR_DODGE,
       kernelSize: KernelSize.SMALL,
-      useLuminanceFilter: true,
+      // useLuminanceFilter: true,
       luminanceThreshold: 0.3,
       luminanceSmoothing: 0.75
     });
@@ -193,6 +202,11 @@ export default {
     blueLight.position.set(300, 300, 200);
     scene.add(blueLight);
 
+    interface pointStart {
+      rotation: {
+        y: number;
+      };
+    }
     let nRotate = 0;
     const animate = () => {
       requestAnimationFrame(animate);
@@ -206,7 +220,11 @@ export default {
       // cloudParticles.forEach(p => {
       //   p.rotation.y = Math.atan2(camera.position.x, camera.position.z);
       // });
-      arrPoint.forEach(Point => Point.rotation.y = Math.atan2(Math.sin(nRotate), Math.cos(nRotate)));
+      arrPoint.forEach((Point:any) => {
+        if (Point.rotation) {
+          Point.rotation.y = Math.atan2(Math.sin(nRotate), Math.cos(nRotate))
+        }
+      });
       
       // directionalLight.position.set(Math.sin(nRotate), 0, Math.cos(nRotate));
       // orangeLight.position.set(Math.sin(nRotate) * 200, 300, Math.cos(nRotate) * 100);
