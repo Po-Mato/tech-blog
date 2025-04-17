@@ -1,30 +1,18 @@
-// src/router.ts
-import { createWebHistory, createRouter } from 'vue-router';
-import Home from '../views/Home.vue';
-import About from '../views/About.vue';
-import Chat from '../views/Chat.vue';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from '../views/Home';
+import About from '../views/About';
+import Chat from '../views/Chat';
 
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home,
-  },
-  {
-    path: '/about',
-    name: 'About',
-    component: About,
-  },
-  {
-    path: '/chat',
-    name: 'Chat',
-    component: Chat,
-  },
-];
+function AppRouter() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/chat" element={<Chat />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
 
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-});
-
-export default router;
+export default AppRouter;
