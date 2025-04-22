@@ -6,15 +6,17 @@ import smoke from "/smoke.png";
 
 const Universe: React.FC = () => {
 	useEffect(() => {
-		const container = document.getElementById("div_universe");
-		const scene = new THREE.Scene();
+		const container = document.getElementById("universe");
+		if (!container) return;
+		const rect = container.getBoundingClientRect();
 		const sizes = {
-			width: window.innerWidth,
-			height: window.innerHeight,
+			width: rect.width,
+			height: rect.height,
 		};
+		const scene = new THREE.Scene();
 		const camera = new THREE.PerspectiveCamera(
 			45,
-			window.innerWidth / window.innerHeight,
+			sizes.width / sizes.height,
 			0.1,
 			2000,
 		);
@@ -187,8 +189,9 @@ const Universe: React.FC = () => {
 		animate();
 
 		window.onresize = () => {
-			renderer.setSize(window.innerWidth, window.innerHeight);
-			camera.aspect = window.innerWidth / window.innerHeight;
+			const rect = container.getBoundingClientRect();
+			renderer.setSize(rect.width, rect.height);
+			camera.aspect = rect.width / rect.height;
 			camera.updateProjectionMatrix();
 		};
 
@@ -200,19 +203,7 @@ const Universe: React.FC = () => {
 		};
 	}, []);
 
-	return (
-		<div
-			id="div_universe"
-			style={{
-				position: "fixed",
-				top: 0,
-				left: 0,
-				right: 0,
-				bottom: 0,
-				zIndex: -1,
-			}}
-		/>
-	);
+	return <div id="universe" />;
 };
 
 export default Universe;

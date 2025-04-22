@@ -1,13 +1,14 @@
 import React from "react";
-import AppRouter from "./routes";
-import Universe from "./components/Universe";
+import AppRouter from "@/routes";
+import NavigationBar from "@/components/NavigationBar";
+import "./App.scss";
 
 function App() {
 	return (
-		<div>
-			<Universe />
+		<>
+			<NavigationBar />
 			<AppRouter />
-		</div>
+		</>
 	);
 }
 

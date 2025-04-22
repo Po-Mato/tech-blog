@@ -1,0 +1,11 @@
+body {
+  padding: 0;
+  margin: 0;
+}
+
+#root {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  height: 100vh;
+  overflow:hidden;
+}
