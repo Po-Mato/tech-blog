@@ -10,8 +10,8 @@
 
 - 프레임워크: Next.js(App Router) + React + TypeScript
 - 페이지:
-  - `app/page.tsx`(홈) — placeholder
-  - `app/posts/[slug]/page.tsx`(포스트 상세) — placeholder
+  - `app/page.tsx`(홈) — 로컬 Markdown 포스트 목록 렌더링
+  - `app/posts/[slug]/page.tsx`(포스트 상세) — 로컬 Markdown 렌더링 + 404 + 정적 생성
 - 배경 비주얼:
   - `src/components/Universe.tsx` / `DynamicUniverse.tsx` (Client Component)
 - 품질 게이트:
@@ -32,12 +32,12 @@
   - 최소 메타데이터: `title`, `date`, `slug` (+ 선택: `description`, `tags`)
 
 ### D2. 배포 타깃(중요)
-현재 `deploy.yaml`은 GitHub Pages로 배포하되 **`publish_dir: ./dist`**를 사용하고 있습니다.
-하지만 Next.js의 기본 빌드 출력은 `dist`가 아닙니다(`.next`, 또는 정적 export 시 `out`).
+현재 `deploy.yaml`은 GitHub Pages 정적 배포를 위해 **`publish_dir: ./out`**을 사용합니다.
+또한 `next.config.ts`는 정적 export(`output: "export"`)로 설정되어 있습니다.
 
 - 선택지
-  1) **GitHub Pages 유지**: Next 정적 export로 전환하고 `publish_dir`를 `out`로 수정
-  2) **Vercel/다른 호스팅**: Next 기본 배포 플로우로 변경
+  1) **GitHub Pages 유지(현재 선택)**: `out/` 산출물을 배포
+  2) **Vercel/다른 호스팅**: `output: "export"`를 제거하고 SSR 배포로 전환
 
 > Sprint 1에서 P0로 처리 권장: “배포 파이프라인이 실제 출력 디렉터리와 일치”하도록 정리
 
@@ -59,6 +59,9 @@
   - `build`: `next build`
   - `start`: `next start`
   - `lint`: `eslint`
+
+> 참고: 정적 export 모드에서는 `next start`가 목적에 맞지 않을 수 있습니다.
+> 배포는 `out/` 정적 파일을 서빙하는 방식(GitHub Pages 등)을 전제로 합니다.
 
 > 참고: 기존 생성 문서 중 `preview` 스크립트 언급이 있는데, 현재 `package.json`에는 없습니다.
 > 문서/스크립트 중 하나를 Sprint 1에서 정리해야 합니다.
@@ -105,6 +108,6 @@
 ## 7) Sprint 1에서 Readiness를 “완료”로 보기 위한 산출물
 
 - (필수) 배포 방식(D2) 결정 및 워크플로 수정 PR
-- (필수) 콘텐츠 소스(D1) 결정 및 최소 2개 샘플 포스트 추가
+- (필수) 콘텐츠 소스(D1) 결정 및 최소 2개 샘플 포스트 추가(현재 샘플 포함)
 - (필수) `/` 및 `/posts/[slug]`가 실제 콘텐츠 기반으로 렌더링
 - (필수) 문서 정합성 업데이트(개발 가이드/배포 가이드)

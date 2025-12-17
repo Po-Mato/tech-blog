@@ -5,12 +5,20 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+
+# Env files
+.env
+.env.*
+!.env.example
 
 node_modules
-dist
-dist-ssr
 *.local
+
+# Coverage
+coverage
+
+# TypeScript
+*.tsbuildinfo
 
 # Editor directories and files
 .vscode/*
@@ -23,6 +31,14 @@ dist-ssr
 *.sln
 *.sw?
 
+# Tooling / agents
 _bmad
 
+# Next.js
 .next
+out
+
+# Hosting / build tools
+.vercel
+.turbo
+.swc

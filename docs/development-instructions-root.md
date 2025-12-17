@@ -17,26 +17,32 @@ pnpm install
 ### Development Server
 
 ```bash
-npm run dev
+pnpm dev
 ```
-(Opens [http://localhost:3000](http://localhost://localhost:3000))
+(Opens [http://localhost:3000](http://localhost:3000))
 
-### Production Preview
+### Static Build Preview (optional)
 
-```bash
-npm run preview
-```
+This project is configured for static export (`next.config.ts` → `output: "export"`).
+After build, static files are generated in `out/`.
+
+You can preview them with any static server.
 
 ## Building the Project
 
 ```bash
-npm run build
+pnpm build
 ```
+
+Optional preview examples:
+
+- `npx serve out`
+- `python3 -m http.server --directory out 3000`
 
 ## Testing
 
 - **Linting:**
   ```bash
-  npm run lint
+  pnpm lint
   ```
 - No dedicated unit/integration test files were found.

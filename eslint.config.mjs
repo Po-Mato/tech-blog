@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+
+    // Tooling/agent templates (not shipped with the app)
+    "_bmad/**",
+    "bmad-custom-src/**",
+    "bmad-custom-modules-src/**",
   ]),
 ]);
 

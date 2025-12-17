@@ -68,12 +68,11 @@ pnpm install
 
 ### Running the Application
 
-- **Development Server:** `npm run dev` (opens `http://localhost:3000`)
-- **Production Preview:** `npm run preview`
+- **Development Server:** `pnpm dev` (opens `http://localhost:3000`)
 
 ### Building the Project
 
-- `npm run build`
+- `pnpm build` (generates static output in `out/`)
 
 ## Deployment Architecture
 
@@ -83,8 +82,8 @@ The project utilizes GitHub Actions for automated deployment to GitHub Pages. Th
 - Setting up Node.js (v18).
 - Installing dependencies.
 - Building the project.
-- Deploying the `dist` directory to a specified GitHub Pages repository (`../Po-Mato.github.io`).
+- Deploying the `out` directory (Next.js static export) to GitHub Pages.
 
 ## Testing Strategy
 
-The project primarily uses `npm run lint` for code quality checks. No dedicated unit or integration test files were found in the codebase.
+The project primarily uses `pnpm lint` for code quality checks. No dedicated unit or integration test files were found in the codebase.
