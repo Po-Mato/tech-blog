@@ -1,8 +1,11 @@
+"use client";
+
 import React, { useEffect } from "react";
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { BloomEffect, BlendFunction, KernelSize } from "postprocessing";
-import smoke from "/smoke.png";
+
+const smoke = "/smoke.png";
 
 const Universe: React.FC = () => {
 	useEffect(() => {

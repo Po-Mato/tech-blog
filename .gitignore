@@ -23,6 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
-.bmad
+_bmad
 
 .next

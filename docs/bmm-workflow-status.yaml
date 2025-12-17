@@ -29,7 +29,7 @@ workflow_status:
   prd: docs/prd.md
   create-ux-design: conditional
   create-architecture: recommended
-  create-epics-and-stories: required
+  create-epics-and-stories: docs/epics-and-stories.md
   test-design: recommended
   validate-architecture: optional
   implementation-readiness: required
