@@ -1,7 +1,8 @@
 "use client";
 
-import {useRouter} from 'next/navigation';
-import {RouterProvider, I18nProvider} from 'react-aria-components';
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { RouterProvider, I18nProvider } from 'react-aria-components';
 
 // Configure the type of the `routerOptions` prop on all React Aria components.
 declare module 'react-aria-components' {
@@ -10,7 +11,12 @@ declare module 'react-aria-components' {
   }
 }
 
-export function ClientProviders({lang, children}) {
+type ClientProvidersProps = {
+  lang: string;
+  children: React.ReactNode;
+};
+
+export function ClientProviders({ lang, children }: ClientProvidersProps) {
   let router = useRouter();
 
   return (
