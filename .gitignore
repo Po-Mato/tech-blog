@@ -38,6 +38,9 @@ _bmad
 .next
 out
 
+# Generated assets
+public/search-index.json
+
 # Hosting / build tools
 .vercel
 .turbo

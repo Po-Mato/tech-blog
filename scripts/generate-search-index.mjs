@@ -1,12 +1,10 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import matter from "gray-matter";
+
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 const OUT_FILE = path.join(process.cwd(), "public", "search-index.json");
-
-function stripFrontmatter(raw) {
-  return raw.replace(/^---\n[\s\S]*?\n---\n/, "");
-}
 
 function stripMarkdown(md) {
   return (
@@ -33,49 +31,21 @@ function stripMarkdown(md) {
   );
 }
 
-function parseFrontmatter(raw) {
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n/);
-  if (!match) return { data: {}, body: raw };
-
-  const fm = match[1];
-  const body = raw.slice(match[0].length);
-  const data = {};
-
-  for (const line of fm.split("\n")) {
-    const idx = line.indexOf(":");
-    if (idx === -1) continue;
-    const key = line.slice(0, idx).trim();
-    const value = line.slice(idx + 1).trim();
-
-    // super-minimal parsing (string or [a,b] style)
-    if (value.startsWith("[") && value.endsWith("]")) {
-      const inner = value.slice(1, -1);
-      data[key] = inner
-        .split(",")
-        .map((s) => s.trim().replace(/^"|"$/g, ""))
-        .filter(Boolean);
-    } else {
-      data[key] = value.replace(/^"|"$/g, "");
-    }
-  }
-
-  return { data, body };
-}
-
 const files = (await fs.readdir(POSTS_DIR)).filter((f) => /\.(md|mdx)$/i.test(f));
 
 const docs = [];
 for (const f of files) {
-  const slug = f.replace(/\.(md|mdx)$/i, "");
+  const fallbackSlug = f.replace(/\.(md|mdx)$/i, "");
   const raw = await fs.readFile(path.join(POSTS_DIR, f), "utf8");
-  const { data, body } = parseFrontmatter(raw);
+  const parsed = matter(raw);
 
-  const title = data.title || slug;
-  const description = data.description || "";
-  const date = data.date || "";
-  const tags = Array.isArray(data.tags) ? data.tags : [];
+  const slug = String(parsed.data.slug || fallbackSlug);
+  const title = String(parsed.data.title || slug);
+  const description = parsed.data.description ? String(parsed.data.description) : "";
+  const date = parsed.data.date ? String(parsed.data.date) : "";
+  const tags = Array.isArray(parsed.data.tags) ? parsed.data.tags.map(String) : [];
 
-  const contentText = stripMarkdown(stripFrontmatter(raw));
+  const contentText = stripMarkdown(parsed.content);
 
   docs.push({
     id: slug,
