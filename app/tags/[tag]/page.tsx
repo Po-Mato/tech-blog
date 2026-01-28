@@ -1,45 +1,41 @@
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-import { getAllPosts } from "../src/lib/posts";
-import { getAllTags, tagToSlug } from "../src/lib/tags";
+import { getAllPosts } from "../../../src/lib/posts";
+import { getAllTags, slugToTag, tagToSlug } from "../../../src/lib/tags";
 
-export default async function Home() {
-  const posts = await getAllPosts();
+export const dynamic = "force-static";
+
+export async function generateStaticParams() {
   const tags = await getAllTags();
+  return tags.map(({ tag }) => ({ tag: tagToSlug(tag) }));
+}
+
+export default async function TagPage({
+  params,
+}: {
+  params: { tag: string };
+}) {
+  const tag = slugToTag(params.tag);
+  const posts = (await getAllPosts()).filter((p) => (p.tags ?? []).includes(tag));
+
+  if (!tag) notFound();
 
   return (
     <main className="mx-auto max-w-3xl p-10 text-white">
       <header className="mb-10">
-        <h1 className="text-4xl font-bold">기술 블로그</h1>
-        <p className="mt-3 text-lg text-white/80">
-          개발하면서 배운 것과 삽질 로그를 기록합니다.
-        </p>
-
-        {tags.length ? (
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <Link
-              href="/tags/"
-              className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/80 hover:bg-white/10"
-            >
-              태그 전체 보기
-            </Link>
-            {tags.slice(0, 10).map(({ tag, count }) => (
-              <Link
-                key={tag}
-                href={`/tags/${tagToSlug(tag)}`}
-                className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/80 hover:bg-white/10"
-                title={`${count} posts`}
-              >
-                #{tag}
-              </Link>
-            ))}
-          </div>
-        ) : null}
+        <div className="text-sm text-white/60">
+          <Link className="hover:underline" href="/tags/">
+            태그
+          </Link>
+        </div>
+        <h1 className="mt-2 text-4xl font-bold">#{tag}</h1>
+        <p className="mt-3 text-lg text-white/80">{posts.length}개의 글</p>
       </header>
 
       {posts.length === 0 ? (
         <div className="rounded-xl border border-white/10 bg-black/30 p-6">
-          <p className="text-white/80">아직 글이 없습니다.</p>
+          <p className="text-white/80">해당 태그의 글이 없습니다.</p>
         </div>
       ) : (
         <ul className="space-y-4">
@@ -50,7 +46,7 @@ export default async function Home() {
             >
               <div className="text-sm text-white/60">{post.date}</div>
               <h2 className="mt-1 text-2xl font-semibold">
-                <Link className="hover:underline" href={`/posts/${post.slug}`}> 
+                <Link className="hover:underline" href={`/posts/${post.slug}`}>
                   {post.title}
                 </Link>
               </h2>
