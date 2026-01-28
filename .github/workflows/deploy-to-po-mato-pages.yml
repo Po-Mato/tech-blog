@@ -1,0 +1,49 @@
+name: Build & Deploy to Po-Mato.github.io
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-po-mato-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      # User/Org Pages (https://<user>.github.io/) should NOT use /<repo> basePath.
+      NEXT_PUBLIC_BASE_PATH: ""
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile
+
+      - name: Build (Next export)
+        run: pnpm build
+
+      - name: Deploy to Po-Mato.github.io
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.PERSONAL_TOKEN }}
+          external_repository: Po-Mato/Po-Mato.github.io
+          publish_branch: main
+          publish_dir: ./out
+          enable_jekyll: false
+          force_orphan: true
