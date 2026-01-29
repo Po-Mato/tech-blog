@@ -355,8 +355,11 @@ class DailyDodgerScene extends Phaser.Scene {
       this.props.onResult({ cleared, score: finalScore, timeMs });
     };
 
-    this.input.once("pointerdown", finish);
-    this.input.keyboard?.once("keydown-SPACE", finish);
+    // Prevent immediate re-trigger on same click
+    this.time.delayedCall(500, () => {
+      this.input.once("pointerdown", finish);
+      this.input.keyboard?.once("keydown-SPACE", finish);
+    });
   }
 }
 
