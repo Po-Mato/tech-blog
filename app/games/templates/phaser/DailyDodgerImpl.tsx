@@ -393,7 +393,6 @@ class DailyDodgerScene extends Phaser.Scene {
     const btnText = this.add.text(w / 2, h / 2 + 80, "BACK TO MENU", {
       color: "#ffffff",
       fontSize: "14px",
-      fontWeight: "bold",
     }).setOrigin(0.5);
 
     btn.on("pointerover", () => btn.setFillStyle(0xffffff, 0.2));
