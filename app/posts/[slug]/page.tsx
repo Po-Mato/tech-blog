@@ -4,6 +4,11 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getPostSlugs } from "../../../src/lib/posts";
 import { site } from "../../../src/lib/site";
 
+// 정적 호스팅(GitHub Pages + output: export)에서는
+// 동적 라우트도 강제로 정적 생성되도록 지정해야 안전합니다.
+export const dynamic = "force-static";
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const slugs = await getPostSlugs();
   return slugs.map((slug) => ({ slug }));
