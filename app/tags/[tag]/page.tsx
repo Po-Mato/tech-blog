@@ -5,6 +5,7 @@ import { getAllPosts } from "../../../src/lib/posts";
 import { getAllTags, slugToTag, tagToSlug } from "../../../src/lib/tags";
 
 export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export async function generateStaticParams() {
   const tags = await getAllTags();
@@ -14,9 +15,10 @@ export async function generateStaticParams() {
 export default async function TagPage({
   params,
 }: {
-  params: { tag: string };
+  params: Promise<{ tag: string }>;
 }) {
-  const tag = slugToTag(params.tag);
+  const { tag: tagSlug } = await params;
+  const tag = slugToTag(tagSlug);
   const posts = (await getAllPosts()).filter((p) => (p.tags ?? []).includes(tag));
 
   if (!tag) notFound();

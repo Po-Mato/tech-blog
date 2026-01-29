@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { getPortfolioBySlug, getPortfolioSlugs } from "../../../src/lib/portfolio";
 import { site } from "../../../src/lib/site";
 
+export const dynamic = "force-static";
+export const dynamicParams = false;
+
 export async function generateStaticParams() {
   const slugs = await getPortfolioSlugs();
   return slugs.map((slug) => ({ slug }));
@@ -12,9 +15,10 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
-  const item = await getPortfolioBySlug(params.slug);
+  const { slug } = await params;
+  const item = await getPortfolioBySlug(slug);
   if (!item) return {};
 
   const title = item.title;
@@ -46,9 +50,10 @@ export async function generateMetadata({
 export default async function PortfolioItemPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
-  const item = await getPortfolioBySlug(params.slug);
+  const { slug } = await params;
+  const item = await getPortfolioBySlug(slug);
   if (!item) notFound();
 
   return (
