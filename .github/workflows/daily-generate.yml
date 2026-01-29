@@ -35,7 +35,7 @@ jobs:
           run_install: false
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: Generate daily game
         run: pnpm generate:daily-game
