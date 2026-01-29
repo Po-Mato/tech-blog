@@ -4,6 +4,7 @@ import path from "node:path";
 import matter from "gray-matter";
 
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
+const PORTFOLIO_DIR = path.join(process.cwd(), "content", "portfolio");
 const OUT_FILE = path.join(process.cwd(), "public", "search-index.json");
 
 function stripMarkdown(md) {
@@ -31,32 +32,54 @@ function stripMarkdown(md) {
   );
 }
 
-const files = (await fs.readdir(POSTS_DIR)).filter((f) => /\.(md|mdx)$/i.test(f));
+async function readDocsFromDir(dir, { type }) {
+  let files = [];
+  try {
+    files = (await fs.readdir(dir)).filter((f) => /\.(md|mdx)$/i.test(f));
+  } catch {
+    // directory may not exist
+    return [];
+  }
 
-const docs = [];
-for (const f of files) {
-  const fallbackSlug = f.replace(/\.(md|mdx)$/i, "");
-  const raw = await fs.readFile(path.join(POSTS_DIR, f), "utf8");
-  const parsed = matter(raw);
+  const out = [];
+  for (const f of files) {
+    const fallbackSlug = f.replace(/\.(md|mdx)$/i, "");
+    const raw = await fs.readFile(path.join(dir, f), "utf8");
+    const parsed = matter(raw);
 
-  const slug = String(parsed.data.slug || fallbackSlug);
-  const title = String(parsed.data.title || slug);
-  const description = parsed.data.description ? String(parsed.data.description) : "";
-  const date = parsed.data.date ? String(parsed.data.date) : "";
-  const tags = Array.isArray(parsed.data.tags) ? parsed.data.tags.map(String) : [];
+    const slug = String(parsed.data.slug || fallbackSlug);
+    const title = String(parsed.data.title || slug);
+    const description = parsed.data.description ? String(parsed.data.description) : "";
+    const date = parsed.data.date ? String(parsed.data.date) : "";
 
-  const contentText = stripMarkdown(parsed.content);
+    // posts use tags; portfolio uses stack (but we index both into tags)
+    const tags = Array.isArray(parsed.data.tags)
+      ? parsed.data.tags.map(String)
+      : Array.isArray(parsed.data.stack)
+        ? parsed.data.stack.map(String)
+        : [];
 
-  docs.push({
-    id: slug,
-    slug,
-    title,
-    description,
-    date,
-    tags,
-    content: contentText,
-  });
+    const contentText = stripMarkdown(parsed.content);
+
+    out.push({
+      id: `${type}:${slug}`,
+      type,
+      slug,
+      title,
+      description,
+      date,
+      tags,
+      content: contentText,
+    });
+  }
+
+  return out;
 }
+
+const docs = [
+  ...(await readDocsFromDir(POSTS_DIR, { type: "post" })),
+  ...(await readDocsFromDir(PORTFOLIO_DIR, { type: "portfolio" })),
+];
 
 // latest first (date string sort)
 docs.sort((a, b) => (a.date < b.date ? 1 : -1));

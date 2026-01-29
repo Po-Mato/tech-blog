@@ -4,6 +4,7 @@ import { isRTL } from "react-aria-components";
 import "./globals.css";
 
 import DynamicUniverse from "../src/components/DynamicUniverse";
+import SiteNav from "../src/components/SiteNav";
 import { site } from "../src/lib/site";
 
 const geistSans = Geist({
@@ -56,7 +57,8 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
         <DynamicUniverse />
-        <div className="relative z-10 h-full">
+        <div className="relative z-10 min-h-full">
+          <SiteNav />
           {children}
         </div>
       </body>

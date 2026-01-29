@@ -56,6 +56,7 @@ function buildSnippet(content: string, q: string, maxLen = 180): string {
 
 type SearchDoc = {
   id: string;
+  type: "post" | "portfolio";
   slug: string;
   title: string;
   description?: string;
@@ -74,7 +75,7 @@ type SearchIndex = {
 function buildMiniSearch(docs: SearchDoc[]) {
   const miniSearch = new MiniSearch<SearchDoc>({
     fields: ["title", "description", "tags", "content"],
-    storeFields: ["slug", "title", "description", "date", "tags"],
+    storeFields: ["type", "slug", "title", "description", "date", "tags"],
     searchOptions: {
       boost: { title: 5, tags: 3, description: 2, content: 1 },
       prefix: true,
@@ -219,8 +220,14 @@ export default function SearchClient() {
               {r.date ? (
                 <div className="text-sm text-white/60">{r.date}</div>
               ) : null}
+              <div className="text-xs text-white/50">
+                {r.type === "portfolio" ? "PORTFOLIO" : "POST"}
+              </div>
               <h2 className="mt-1 text-2xl font-semibold">
-                <Link className="hover:underline" href={`/posts/${r.slug}`}>
+                <Link
+                  className="hover:underline"
+                  href={r.type === "portfolio" ? `/portfolio/${r.slug}/` : `/posts/${r.slug}/`}
+                >
                   <span
                     dangerouslySetInnerHTML={{
                       __html: highlightHtml(r.title, q),
@@ -240,7 +247,7 @@ export default function SearchClient() {
 
               {/* small snippet from content (not stored in MiniSearch results) */}
               {(() => {
-                const doc = docs.find((d) => d.slug === r.slug);
+                const doc = docs.find((d) => d.slug === r.slug && d.type === r.type);
                 const snippet = doc ? buildSnippet(doc.content, q) : "";
                 return snippet ? (
                   <p
