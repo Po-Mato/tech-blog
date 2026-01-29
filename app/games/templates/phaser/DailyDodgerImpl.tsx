@@ -364,15 +364,20 @@ class DailyDodgerScene extends Phaser.Scene {
       fontSize: "14px",
     }).setOrigin(0.5);
 
-    btn.on("pointerover", () => btn.setFillStyle(0xffffff, 0.2));
-    btn.on("pointerout", () => btn.setFillStyle(0xffffff, 0.1));
+    // Make text also interactive and forward events
+    btnText.setInteractive({ useHandCursor: true });
 
-    // Multiple ways to finish
     const triggerFinish = () => {
       finish();
     };
 
+    btn.on("pointerover", () => btn.setFillStyle(0xffffff, 0.2));
+    btn.on("pointerout", () => btn.setFillStyle(0xffffff, 0.1));
     btn.on("pointerdown", triggerFinish);
+
+    btnText.on("pointerover", () => btn.setFillStyle(0xffffff, 0.2));
+    btnText.on("pointerout", () => btn.setFillStyle(0xffffff, 0.1));
+    btnText.on("pointerdown", triggerFinish);
 
     // Global listeners with delay
     this.time.delayedCall(800, () => {
