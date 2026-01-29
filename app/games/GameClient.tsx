@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DailyGame } from "../../src/lib/games";
+import DailyDodger from "./templates/phaser/DailyDodger";
 
 type GameRecord =
   | {
@@ -18,6 +19,13 @@ type GameRecord =
       moves: number;
       timeMs: number;
       score: number;
+      savedAt: number;
+    }
+  | {
+      type: "phaser";
+      cleared: boolean;
+      bestScore: number;
+      bestTimeMs?: number;
       savedAt: number;
     };
 
@@ -79,9 +87,15 @@ export default function GameClient({ game }: { game: DailyGame }) {
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
         <div className="text-sm text-white/70">
           {record?.cleared ? (
-            <span>
-              클리어 · 점수 <span className="text-white">{record.score}</span>
-            </span>
+            record.type === "phaser" ? (
+              <span>
+                클리어 · 최고점 <span className="text-white">{record.bestScore}</span>
+              </span>
+            ) : (
+              <span>
+                클리어 · 점수 <span className="text-white">{record.score}</span>
+              </span>
+            )
           ) : (
             <span>아직 기록 없음</span>
           )}
@@ -107,13 +121,64 @@ export default function GameClient({ game }: { game: DailyGame }) {
           initial={record?.type === "quiz" ? record : null}
           onClear={handleClearQuiz}
         />
-      ) : (
+      ) : game.type === "memory" ? (
         <Memory
           game={game}
           initial={record?.type === "memory" ? record : null}
           onClear={handleClearMemory}
         />
+      ) : (
+        <PhaserWrapper
+          game={game}
+          record={record?.type === "phaser" ? record : null}
+          onSave={(next) => {
+            saveRecord(game.date, next);
+            setRecord(next);
+          }}
+        />
       )}
+    </div>
+  );
+}
+
+function PhaserWrapper({
+  game,
+  record,
+  onSave,
+}: {
+  game: Extract<DailyGame, { type: "phaser" }>;
+  record: Extract<GameRecord, { type: "phaser" }> | null;
+  onSave: (r: Extract<GameRecord, { type: "phaser" }>) => void;
+}) {
+  if (game.template === "dodger") {
+    return (
+      <DailyDodger
+        date={game.date}
+        seed={game.seed}
+        stagePack={game.stagePack}
+        difficulty={game.difficulty}
+        theme={game.theme}
+        initialBest={record ? { bestScore: record.bestScore, bestTimeMs: record.bestTimeMs, cleared: record.cleared } : null}
+        onResult={({ cleared, score, timeMs }) => {
+          const bestScore = Math.max(record?.bestScore ?? 0, score);
+          const bestTimeMs = record?.bestTimeMs
+            ? Math.min(record.bestTimeMs, timeMs)
+            : timeMs;
+          onSave({
+            type: "phaser",
+            cleared: record?.cleared ? true : cleared,
+            bestScore,
+            bestTimeMs,
+            savedAt: Date.now(),
+          });
+        }}
+      />
+    );
+  }
+
+  return (
+    <div className="text-white/80">
+      아직 이 템플릿은 준비 중.
     </div>
   );
 }

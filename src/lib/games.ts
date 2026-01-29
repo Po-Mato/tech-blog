@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-export type GameType = "quiz" | "memory";
+export type GameType = "quiz" | "memory" | "phaser";
 
 export type QuizChoice = {
   id: string;
@@ -25,11 +25,21 @@ export type MemoryGame = {
   cards: MemoryCard[];
 };
 
+export type PhaserDodgerGame = {
+  type: "phaser";
+  template: "dodger";
+  seed: number;
+  // "stagePack" lets us occasionally introduce a new ruleset/stage family.
+  stagePack: "classic" | "spiral" | "swarm" | "boss";
+  difficulty: 1 | 2 | 3 | 4 | 5;
+  theme: "neon" | "mono" | "sunset";
+};
+
 export type DailyGame = {
   date: string; // YYYY-MM-DD (KST)
   title: string;
   description?: string;
-} & (QuizGame | MemoryGame);
+} & (QuizGame | MemoryGame | PhaserDodgerGame);
 
 const gamesDirectory = path.join(process.cwd(), "content", "games");
 

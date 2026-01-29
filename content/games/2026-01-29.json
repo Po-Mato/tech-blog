@@ -1,13 +1,11 @@
 {
   "date": "2026-01-29",
-  "type": "quiz",
-  "title": "오늘의 트렌드 퀴즈",
-  "description": "아래 보기 중 ‘오늘 트렌드 글에 등장한’ 프로젝트를 맞춰봐.",
-  "question": "오늘 트렌드에 포함된 repo는?",
-  "choices": [
-    { "id": "1", "label": "anomalyco/opencode", "correct": true },
-    { "id": "2", "label": "vercel/next.js", "correct": false },
-    { "id": "3", "label": "tailwindlabs/tailwindcss", "correct": false },
-    { "id": "4", "label": "remotion-dev/remotion", "correct": false }
-  ]
+  "type": "phaser",
+  "template": "dodger",
+  "title": "Daily Dodger — Neon Storm",
+  "description": "탄막을 피하고 오브를 먹어서 점수를 올려봐. 5 스테이지 생존하면 클리어! (오늘의 트렌드 시드 기반)",
+  "seed": 20260129,
+  "stagePack": "spiral",
+  "difficulty": 3,
+  "theme": "neon"
 }

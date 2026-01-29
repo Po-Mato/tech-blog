@@ -18,24 +18,10 @@ function mulberry32(seed) {
 }
 
 function seedFromDate(dateStr) {
-  // simple deterministic seed from YYYY-MM-DD
+  // deterministic seed from YYYY-MM-DD
   let s = 0;
   for (let i = 0; i < dateStr.length; i++) s = (s * 31 + dateStr.charCodeAt(i)) >>> 0;
   return s;
-}
-
-function pick(rng, arr, n) {
-  const copy = [...arr];
-  const out = [];
-  while (copy.length && out.length < n) {
-    const idx = Math.floor(rng() * copy.length);
-    out.push(copy.splice(idx, 1)[0]);
-  }
-  return out;
-}
-
-function uniq(arr) {
-  return [...new Set(arr)];
 }
 
 async function readIfExists(p) {
@@ -54,7 +40,15 @@ function extractGitHubReposFromMarkdown(md) {
   while ((m = re.exec(md))) {
     out.push(`${m[1]}/${m[2]}`);
   }
-  return uniq(out);
+  return [...new Set(out)];
+}
+
+function toYYYYMMDDNumber(dateStr) {
+  return Number(dateStr.replace(/-/g, ""));
+}
+
+function pickOne(rng, arr) {
+  return arr[Math.floor(rng() * arr.length)];
 }
 
 async function main() {
@@ -74,70 +68,35 @@ async function main() {
     return;
   }
 
+  // Use today's trend post as entropy (optional) — for future expansion
   const todayPostSlug = `frontend-trends-${date}`;
   const todayPostPath = path.join(postsDir, `${todayPostSlug}.md`);
   const postMd = (await readIfExists(todayPostPath)) ?? "";
-
   const repos = extractGitHubReposFromMarkdown(postMd);
-  // fallback pool (still trend-ish)
-  const fallback = [
-    "facebook/react",
-    "vercel/next.js",
-    "tailwindlabs/tailwindcss",
-    "microsoft/TypeScript",
-    "yjs/yjs",
-    "swagger-api/swagger-ui",
-  ];
 
-  const pool = uniq([...(repos.length ? repos : []), ...fallback]);
+  // Phaser template (complex daily game)
+  // Occasionally rotate stage packs to feel like "new stages".
+  const dayNum = toYYYYMMDDNumber(date);
+  const packs = /** @type {const} */ (["classic", "spiral", "swarm", "boss"]);
 
-  // choose game type deterministically
-  const types = ["quiz", "memory"]; // extend later
-  const type = types[Math.floor(rng() * types.length)];
+  // Most days follow a cycle; sometimes (when repos are rich) bias to boss.
+  let stagePack = packs[dayNum % packs.length];
+  if (repos.length >= 6 && rng() > 0.75) stagePack = "boss";
 
-  let game;
+  const difficulty = /** @type {1|2|3|4|5} */ (Math.max(1, Math.min(5, 2 + (dayNum % 4))));
+  const theme = /** @type {"neon"|"mono"|"sunset"} */ (pickOne(rng, ["neon", "mono", "sunset"]));
 
-  if (type === "quiz") {
-    const correct = pick(rng, pool, 3)[0] ?? pool[0];
-    const wrong = pick(rng, pool.filter((r) => r !== correct), 3);
-    const choices = pick(rng, uniq([correct, ...wrong]), 4).map((label, i) => ({
-      id: String(i + 1),
-      label,
-      correct: label === correct,
-    }));
-
-    game = {
-      date,
-      type: "quiz",
-      title: "오늘의 트렌드 퀴즈",
-      description: "아래 보기 중 ‘오늘 트렌드 글에 등장한’ 프로젝트를 맞춰봐.",
-      question: "오늘 트렌드에 포함된 repo는?",
-      choices,
-    };
-  } else {
-    // memory match: 6 labels => 12 cards
-    const labels = pick(rng, pool, 6);
-    const cards = [];
-    let id = 1;
-    for (const label of labels) {
-      cards.push({ id: String(id++), label });
-      cards.push({ id: String(id++), label });
-    }
-
-    // shuffle
-    for (let i = cards.length - 1; i > 0; i--) {
-      const j = Math.floor(rng() * (i + 1));
-      [cards[i], cards[j]] = [cards[j], cards[i]];
-    }
-
-    game = {
-      date,
-      type: "memory",
-      title: "오늘의 키워드 카드 매칭",
-      description: "오늘 트렌드 글에서 나온 키워드(Repo) 2장을 찾아서 맞춰봐.",
-      cards,
-    };
-  }
+  const game = {
+    date,
+    type: "phaser",
+    template: "dodger",
+    title: `Daily Dodger — ${stagePack.toUpperCase()}`,
+    description: "탄막을 피하고 오브를 먹어서 점수를 올려봐. 5 스테이지 생존하면 클리어! (매일 시드/스테이지 팩 변경)",
+    seed: dayNum,
+    stagePack,
+    difficulty,
+    theme,
+  };
 
   await fs.writeFile(gamePath, JSON.stringify(game, null, 2) + "\n", "utf8");
   console.log(`[daily-game] wrote ${gamePath}`);
