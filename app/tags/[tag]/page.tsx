@@ -46,7 +46,7 @@ export default async function TagPage({
             >
               <div className="text-sm text-white/60">{post.date}</div>
               <h2 className="mt-1 text-2xl font-semibold">
-                <Link className="hover:underline" href={`/posts/${post.slug}`}>
+                <Link className="hover:underline" href={`/posts/${post.slug}/`}>
                   {post.title}
                 </Link>
               </h2>
@@ -58,7 +58,7 @@ export default async function TagPage({
                   {post.tags.map((t) => (
                     <Link
                       key={t}
-                      href={`/tags/${tagToSlug(t)}`}
+                      href={`/tags/${tagToSlug(t)}/`}
                       className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 hover:bg-white/10"
                     >
                       #{t}

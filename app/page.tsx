@@ -34,7 +34,7 @@ export default async function Home() {
           {tags.slice(0, 10).map(({ tag, count }) => (
             <Link
               key={tag}
-              href={`/tags/${tagToSlug(tag)}`}
+              href={`/tags/${tagToSlug(tag)}/`}
               className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/80 hover:bg-white/10"
               title={`${count} posts`}
             >
@@ -57,7 +57,7 @@ export default async function Home() {
             >
               <div className="text-sm text-white/60">{post.date}</div>
               <h2 className="mt-1 text-2xl font-semibold">
-                <Link className="hover:underline" href={`/posts/${post.slug}`}> 
+                <Link className="hover:underline" href={`/posts/${post.slug}/`}>
                   {post.title}
                 </Link>
               </h2>
@@ -69,7 +69,7 @@ export default async function Home() {
                   {post.tags.map((t) => (
                     <Link
                       key={t}
-                      href={`/tags/${tagToSlug(t)}`}
+                      href={`/tags/${tagToSlug(t)}/`}
                       className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 hover:bg-white/10"
                     >
                       #{t}

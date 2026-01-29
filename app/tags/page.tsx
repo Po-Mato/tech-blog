@@ -23,7 +23,7 @@ export default async function TagsPage() {
           {tags.map(({ tag, count }) => (
             <li key={tag}>
               <Link
-                href={`/tags/${tagToSlug(tag)}`}
+                href={`/tags/${tagToSlug(tag)}/`}
                 className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-sm text-white/80 hover:bg-white/10"
               >
                 <span>#{tag}</span>
