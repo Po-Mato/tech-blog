@@ -321,36 +321,6 @@ class DailyDodgerScene extends Phaser.Scene {
     const bonus = cleared ? 5000 : 0;
     const finalScore = this.score + bonus;
 
-    // Overlay
-    const w = this.scale.width;
-    const h = this.scale.height;
-    const box = this.add.rectangle(w / 2, h / 2, Math.min(420, w - 40), 200, 0x000000, 0.55);
-    box.setStrokeStyle(1, 0xffffff, 0.12);
-    const title = cleared ? "CLEAR" : "GAME OVER";
-    this.add.text(w / 2, h / 2 - 52, title, {
-      color: "#ffffff",
-      fontSize: "28px",
-      fontFamily: "ui-sans-serif, system-ui",
-    }).setOrigin(0.5);
-
-    this.add.text(w / 2, h / 2 - 12, `Score: ${finalScore}`, {
-      color: "#e5e7eb",
-      fontSize: "16px",
-      fontFamily: "ui-sans-serif, system-ui",
-    }).setOrigin(0.5);
-
-    this.add.text(w / 2, h / 2 + 14, `Time: ${(timeMs / 1000).toFixed(1)}s`, {
-      color: "#9ca3af",
-      fontSize: "12px",
-      fontFamily: "ui-sans-serif, system-ui",
-    }).setOrigin(0.5);
-
-    this.add.text(w / 2, h / 2 + 56, "Tap / Space to finish", {
-      color: "#9ca3af",
-      fontSize: "12px",
-      fontFamily: "ui-sans-serif, system-ui",
-    }).setOrigin(0.5);
-
     const finish = () => {
       this.props.onResult({ cleared, score: finalScore, timeMs });
     };
@@ -399,7 +369,6 @@ class DailyDodgerScene extends Phaser.Scene {
 
     // Multiple ways to finish
     const triggerFinish = () => {
-      this.sound.play("click", { volume: 0.5 }).catch(() => {});
       finish();
     };
 
@@ -407,8 +376,7 @@ class DailyDodgerScene extends Phaser.Scene {
 
     // Global listeners with delay
     this.time.delayedCall(800, () => {
-      this.input.once("pointerdown", (p: Phaser.Input.Pointer) => {
-        // If they didn't click the button but clicked elsewhere, also finish
+      this.input.once("pointerdown", () => {
         if (this.ended) finish();
       });
       this.input.keyboard?.once("keydown-SPACE", finish);
