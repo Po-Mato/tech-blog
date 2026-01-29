@@ -1,20 +1,133 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DailyGame } from "../../src/lib/games";
 
+type GameRecord =
+  | {
+      type: "quiz";
+      cleared: boolean;
+      score: number; // 0 or 1
+      pickedId: string;
+      savedAt: number;
+    }
+  | {
+      type: "memory";
+      cleared: boolean;
+      moves: number;
+      timeMs: number;
+      score: number;
+      savedAt: number;
+    };
+
+function storageKey(date: string) {
+  return `dailyGame:${date}`;
+}
+
+function loadRecord(date: string): GameRecord | null {
+  try {
+    const raw = localStorage.getItem(storageKey(date));
+    if (!raw) return null;
+    return JSON.parse(raw) as GameRecord;
+  } catch {
+    return null;
+  }
+}
+
+function saveRecord(date: string, record: GameRecord) {
+  try {
+    localStorage.setItem(storageKey(date), JSON.stringify(record));
+  } catch {
+    // ignore
+  }
+}
+
+function clearRecord(date: string) {
+  try {
+    localStorage.removeItem(storageKey(date));
+  } catch {
+    // ignore
+  }
+}
+
 export default function GameClient({ game }: { game: DailyGame }) {
-  if (game.type === "quiz") return <Quiz game={game} />;
-  return <Memory game={game} />;
+  const [record, setRecord] = useState<GameRecord | null>(null);
+
+  useEffect(() => {
+    setRecord(loadRecord(game.date));
+  }, [game.date]);
+
+  const handleClearQuiz = useCallback(
+    (r: Extract<GameRecord, { type: "quiz" }>) => {
+      saveRecord(game.date, r);
+      setRecord(r);
+    },
+    [game.date]
+  );
+
+  const handleClearMemory = useCallback(
+    (r: Extract<GameRecord, { type: "memory" }>) => {
+      saveRecord(game.date, r);
+      setRecord(r);
+    },
+    [game.date]
+  );
+
+  return (
+    <div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3">
+        <div className="text-sm text-white/70">
+          {record?.cleared ? (
+            <span>
+              클리어 · 점수 <span className="text-white">{record.score}</span>
+            </span>
+          ) : (
+            <span>아직 기록 없음</span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-white/70 hover:bg-black/40"
+          onClick={() => {
+            clearRecord(game.date);
+            setRecord(null);
+            // 게임별 내부 상태는 버튼 새로고침으로 리셋되게 처리(간단 버전)
+            window.location.reload();
+          }}
+        >
+          기록 초기화
+        </button>
+      </div>
+
+      {game.type === "quiz" ? (
+        <Quiz
+          game={game}
+          initial={record?.type === "quiz" ? record : null}
+          onClear={handleClearQuiz}
+        />
+      ) : (
+        <Memory
+          game={game}
+          initial={record?.type === "memory" ? record : null}
+          onClear={handleClearMemory}
+        />
+      )}
+    </div>
+  );
 }
 
 function Quiz({
   game,
+  initial,
+  onClear,
 }: {
   game: Extract<DailyGame, { type: "quiz" }>;
+  initial: Extract<GameRecord, { type: "quiz" }> | null;
+  onClear: (r: Extract<GameRecord, { type: "quiz" }>) => void;
 }) {
-  const [picked, setPicked] = useState<string | null>(null);
+  const [picked, setPicked] = useState<string | null>(initial?.pickedId ?? null);
   const correctId = useMemo(
     () => game.choices.find((c) => c.correct)?.id ?? null,
     [game.choices]
@@ -43,7 +156,19 @@ function Quiz({
               key={c.id}
               type="button"
               className={`w-full rounded-xl border ${border} bg-white/5 px-4 py-3 text-left hover:bg-white/10`}
-              onClick={() => setPicked(c.id)}
+              onClick={() => {
+                if (picked !== null) return;
+                setPicked(c.id);
+
+                const correct = Boolean(correctId) && c.id === correctId;
+                onClear({
+                  type: "quiz",
+                  cleared: true,
+                  score: correct ? 1 : 0,
+                  pickedId: c.id,
+                  savedAt: Date.now(),
+                });
+              }}
               disabled={picked !== null}
             >
               <div className="font-medium">{c.label}</div>
@@ -70,11 +195,17 @@ function Quiz({
 
 function Memory({
   game,
+  initial,
+  onClear,
 }: {
   game: Extract<DailyGame, { type: "memory" }>;
+  initial: Extract<GameRecord, { type: "memory" }> | null;
+  onClear: (r: Extract<GameRecord, { type: "memory" }>) => void;
 }) {
   const [open, setOpen] = useState<string[]>([]);
   const [matched, setMatched] = useState<Set<string>>(new Set());
+  const [moves, setMoves] = useState<number>(initial?.moves ?? 0);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
 
   const cards = useMemo(() => {
     // 같은 라벨 2장씩이라고 가정
@@ -96,10 +227,14 @@ function Memory({
     if (open.includes(id)) return;
     if (open.length >= 2) return;
 
+    if (startedAt === null) setStartedAt(Date.now());
+
     const next = [...open, id];
     setOpen(next);
 
     if (next.length === 2) {
+      setMoves((m) => m + 1);
+
       const [a, b] = next;
       const ca = cards.find((c) => c.id === a);
       const cb = cards.find((c) => c.id === b);
@@ -120,6 +255,24 @@ function Memory({
   }
 
   const done = matched.size === game.cards.length;
+
+  useEffect(() => {
+    if (!done) return;
+    if (!startedAt) return;
+
+    const timeMs = Math.max(0, Date.now() - startedAt);
+    // 아주 단순한 점수: 빠를수록 +, 적은 이동수일수록 +
+    const score = Math.max(0, Math.round(10000 / (1 + timeMs / 1000) + 5000 / (1 + moves)));
+
+    onClear({
+      type: "memory",
+      cleared: true,
+      moves,
+      timeMs,
+      score,
+      savedAt: Date.now(),
+    });
+  }, [done, startedAt, moves, onClear]);
 
   return (
     <div>
