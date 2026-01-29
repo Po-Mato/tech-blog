@@ -370,7 +370,7 @@ class DailyDodgerScene extends Phaser.Scene {
     this.add.text(w / 2, h / 2 - 70, title, {
       color: cleared ? "#a3e635" : "#ff5c8a",
       fontSize: "32px",
-      fontWeight: "bold",
+      fontStyle: "bold",
       fontFamily: "ui-sans-serif, system-ui, sans-serif",
     }).setOrigin(0.5);
 
