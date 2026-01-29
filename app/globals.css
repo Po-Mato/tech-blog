@@ -23,7 +23,10 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden; /* Prevent scrolling of the background */
+  /* 모바일에서 메인 콘텐츠 스크롤을 막지 않도록 */
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 body {
@@ -40,4 +43,5 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: 0; /* Place behind other content */
+  pointer-events: none; /* 스크롤/터치 이벤트를 막지 않도록 */
 }
