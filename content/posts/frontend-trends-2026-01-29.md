@@ -15,7 +15,34 @@ tags: ["frontend", "react", "nextjs", "rsc", "tailwind", "typescript", "trends"]
 - **Tailwind v4**: 빌드/성능/구성 방식이 달라지면서 설정/플러그인 호환 이슈가 자주 발생.
 - **TypeScript 최신화**: 설정(특히 `moduleResolution`, `isolatedModules`, `verbatimModuleSyntax`)이 번들러/Next와 충돌할 수 있어 점검 필요.
 
-> 참고: 이 글은 “오늘의 트렌드” 포맷이지만, 웹 리서치 자동화(링크 수집)는 아직 연결 전이라 **공식 릴리즈 노트/문서 확인 링크를 체크리스트로 제공**합니다.
+> 참고: 오늘 글은 아래 2개의 트렌드 소스(Best of JS / GitHub Trending)를 훑어서 **“프론트엔드 관점에서 의미 있는 것만”** 뽑아 정리했습니다.
+
+### 오늘 참고한 트렌드 소스
+
+- Best of JS: <https://bestofjs.org/>
+- GitHub Trending (JavaScript / daily): <https://github.com/trending/javascript?since=daily>
+
+---
+
+## 오늘 뜨는 프로젝트/이슈 (요약)
+
+### Best of JS: Hot Projects (어제 별 증가 기준)
+
+> Best of JS는 “어제 별이 많이 늘어난 프로젝트”를 집계해 보여줘서, **단기 이슈/트렌드 감지**에 좋아요.
+
+- OpenCode — 오픈소스 코딩 에이전트: <https://bestofjs.org/projects/opencode> (GitHub: <https://github.com/anomalyco/opencode>)
+- Remotion — React로 영상 만들기: <https://bestofjs.org/projects/remotion> (GitHub: <https://github.com/remotion-dev/remotion>)
+- React Best Practices (agent-skills) — Vercel의 에이전트 스킬 컬렉션: <https://bestofjs.org/projects/agent-skills> (GitHub: <https://github.com/vercel-labs/agent-skills>)
+- GTKX — React+TS로 GTK4 데스크톱 앱: <https://bestofjs.org/projects/gtkx> (GitHub: <https://github.com/gtkx-org/gtkx>)
+
+### GitHub Trending (JavaScript / daily)에서 눈에 띄는 것
+
+- `facebook/react` — React 자체가 계속 상위권(생태계/릴리즈 파급): <https://github.com/facebook/react>
+- `swagger-api/swagger-ui` — API 문서/프론트 개발 워크플로우에서 여전히 핵심: <https://github.com/swagger-api/swagger-ui>
+- `yjs/yjs` — 협업 기능(동시 편집/실시간) 쪽은 꾸준히 성장: <https://github.com/yjs/yjs>
+- `facebook/create-react-app` — “유지보수/대체 스택” 논의가 다시 불붙는 패턴이 자주 나옴: <https://github.com/facebook/create-react-app>
+
+> 관찰: 오늘은 특히 **AI 도구/에이전트(코딩 보조)**, **문서/워크플로우(Swagger UI)**, **협업(Realtime)** 쪽이 강하게 보였고, 프론트엔드의 ‘일’ 자체가 바뀌는 흐름이 이어지는 느낌.
 
 ---
 
@@ -118,11 +145,18 @@ Next + TS에서는 타입 안정성뿐 아니라 **빌드 파이프라인/ESM/CJ
 
 ---
 
-## 참고 링크(나중에 자동으로 붙일 예정)
+## 참고 링크
 
-- React 공식 블로그 / 릴리즈 노트
-- Next.js 릴리즈 노트(App Router / RSC / 캐시)
-- Tailwind CSS v4 마이그레이션 가이드
-- TypeScript 릴리즈 노트
+### 오늘의 트렌드 소스
 
-> 다음 작업: 내가 웹 리서치(링크 자동 수집) 기능을 붙이면, 이 섹션을 “오늘의 실제 이슈 링크 + 요약”으로 매일 갱신 가능.
+- Best of JS: <https://bestofjs.org/>
+- GitHub Trending (JavaScript / daily): <https://github.com/trending/javascript?since=daily>
+
+### 공식 문서(기본기 점검용)
+
+- React: <https://react.dev/>
+- Next.js: <https://nextjs.org/docs>
+- Tailwind CSS: <https://tailwindcss.com/docs>
+- TypeScript: <https://www.typescriptlang.org/docs/>
+
+> 내일 포맷은 “트렌드 프로젝트 3개 + 실무 적용 3줄 요약 + 체크리스트”로 더 짧게도 만들 수 있어.
