@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/generate-search-index.mjs",
+    "prebuild": "node scripts/generate-search-index.mjs && node scripts/generate-daily-game.mjs",
     "build": "next build && node scripts/generate-rss.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate:daily-game": "node scripts/generate-daily-game.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

@@ -4,6 +4,7 @@ type NavItem = { href: string; label: string };
 
 const items: NavItem[] = [
   { href: "/", label: "블로그" },
+  { href: "/games/", label: "게임" },
   { href: "/portfolio/", label: "포트폴리오" },
   { href: "/search/", label: "검색" },
   { href: "/tags/", label: "태그" },
