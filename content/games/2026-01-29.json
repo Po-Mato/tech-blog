@@ -2,10 +2,10 @@
   "date": "2026-01-29",
   "type": "phaser",
   "template": "dodger",
-  "title": "Daily Dodger — Neon Storm",
-  "description": "탄막을 피하고 오브를 먹어서 점수를 올려봐. 5 스테이지 생존하면 클리어! (오늘의 트렌드 시드 기반)",
-  "seed": 20260129,
-  "stagePack": "spiral",
-  "difficulty": 3,
-  "theme": "neon"
+  "title": "Daily Dodger — BOSS RUSH",
+  "description": "오늘의 특별판! 강력한 보스 패턴이 등장합니다. 5 스테이지를 버텨보세요.",
+  "seed": 99999,
+  "stagePack": "boss",
+  "difficulty": 4,
+  "theme": "sunset"
 }
