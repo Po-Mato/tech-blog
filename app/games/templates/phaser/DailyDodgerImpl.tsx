@@ -355,10 +355,71 @@ class DailyDodgerScene extends Phaser.Scene {
       this.props.onResult({ cleared, score: finalScore, timeMs });
     };
 
-    // Prevent immediate re-trigger on same click
-    this.time.delayedCall(500, () => {
-      this.input.once("pointerdown", finish);
+    // Overlay
+    const w = this.scale.width;
+    const h = this.scale.height;
+
+    // Background Dim
+    const overlay = this.add.rectangle(w / 2, h / 2, w, h, 0x000000, 0.7);
+    overlay.setInteractive(); // Block events to game world
+
+    const box = this.add.rectangle(w / 2, h / 2, Math.min(420, w - 40), 240, 0x000000, 0.8);
+    box.setStrokeStyle(2, cleared ? 0xa3e635 : 0xff5c8a, 0.8);
+
+    const title = cleared ? "MISSION CLEAR" : "GAME OVER";
+    this.add.text(w / 2, h / 2 - 70, title, {
+      color: cleared ? "#a3e635" : "#ff5c8a",
+      fontSize: "32px",
+      fontWeight: "bold",
+      fontFamily: "ui-sans-serif, system-ui, sans-serif",
+    }).setOrigin(0.5);
+
+    this.add.text(w / 2, h / 2 - 10, `Score: ${finalScore.toLocaleString()}`, {
+      color: "#ffffff",
+      fontSize: "20px",
+      fontFamily: "ui-sans-serif, system-ui",
+    }).setOrigin(0.5);
+
+    this.add.text(w / 2, h / 2 + 25, `Time: ${(timeMs / 1000).toFixed(1)}s`, {
+      color: "#9ca3af",
+      fontSize: "14px",
+      fontFamily: "ui-sans-serif, system-ui",
+    }).setOrigin(0.5);
+
+    const btn = this.add.rectangle(w / 2, h / 2 + 80, 180, 40, 0xffffff, 0.1);
+    btn.setStrokeStyle(1, 0xffffff, 0.3);
+    btn.setInteractive({ useHandCursor: true });
+
+    const btnText = this.add.text(w / 2, h / 2 + 80, "BACK TO MENU", {
+      color: "#ffffff",
+      fontSize: "14px",
+      fontWeight: "bold",
+    }).setOrigin(0.5);
+
+    btn.on("pointerover", () => btn.setFillStyle(0xffffff, 0.2));
+    btn.on("pointerout", () => btn.setFillStyle(0xffffff, 0.1));
+
+    // Multiple ways to finish
+    const triggerFinish = () => {
+      this.sound.play("click", { volume: 0.5 }).catch(() => {});
+      finish();
+    };
+
+    btn.on("pointerdown", triggerFinish);
+
+    // Global listeners with delay
+    this.time.delayedCall(800, () => {
+      this.input.once("pointerdown", (p: Phaser.Input.Pointer) => {
+        // If they didn't click the button but clicked elsewhere, also finish
+        if (this.ended) finish();
+      });
       this.input.keyboard?.once("keydown-SPACE", finish);
+      this.input.keyboard?.once("keydown-ENTER", finish);
+
+      this.add.text(w / 2, h / 2 + 115, "(or press Space/Enter)", {
+        color: "#6b7280",
+        fontSize: "10px",
+      }).setOrigin(0.5);
     });
   }
 }
@@ -382,6 +443,11 @@ export default function DailyDodgerImpl(props: Props) {
       width: 720,
       height: 520,
       backgroundColor: colors.bg,
+      input: {
+        keyboard: true,
+        mouse: true,
+        touch: true,
+      },
       scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH,
