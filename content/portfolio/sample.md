@@ -3,6 +3,7 @@ title: "샘플 프로젝트"
 date: "2026-01"
 slug: "sample-project"
 description: "포트폴리오 마크다운/정적 관리 샘플"
+featured: true
 role: "Solo Dev"
 stack: ["Next.js", "TypeScript", "GitHub Pages"]
 links:

@@ -3,7 +3,7 @@ import Link from "next/link";
 type NavItem = { href: string; label: string };
 
 const items: NavItem[] = [
-  { href: "/", label: "홈" },
+  { href: "/", label: "블로그" },
   { href: "/portfolio/", label: "포트폴리오" },
   { href: "/search/", label: "검색" },
   { href: "/tags/", label: "태그" },

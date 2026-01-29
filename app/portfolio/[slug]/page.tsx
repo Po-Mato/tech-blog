@@ -56,7 +56,14 @@ export default async function PortfolioItemPage({
       <article className="rounded-xl border border-white/10 bg-black/30 p-8 backdrop-blur">
         {item.date ? <div className="text-sm text-white/60">{item.date}</div> : null}
         <h1 className="mt-2 text-4xl font-bold">{item.title}</h1>
-        {item.role ? <div className="mt-3 text-white/70">Role: {item.role}</div> : null}
+        <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-white/70">
+          {item.featured ? (
+            <span className="rounded-full border border-yellow-300/30 bg-yellow-300/10 px-2 py-0.5 text-xs text-yellow-200">
+              Featured
+            </span>
+          ) : null}
+          {item.role ? <span>Role: {item.role}</span> : null}
+        </div>
         {item.description ? <p className="mt-3 text-white/80">{item.description}</p> : null}
 
         {item.stack?.length ? (

@@ -12,8 +12,9 @@ import rehypeStringify from "rehype-stringify";
 export type PortfolioMeta = {
   slug: string;
   title: string;
-  date?: string; // optional (e.g., "2025-01")
+  date?: string; // optional (e.g., "2025-01" or "2025-01-15")
   description?: string;
+  featured?: boolean;
   stack?: string[];
   role?: string;
   links?: {
@@ -75,15 +76,18 @@ export async function getPortfolioBySlug(slug: string): Promise<PortfolioItem | 
     title: String(data.title || slug),
     date: data.date ? String(data.date) : undefined,
     description: data.description ? String(data.description) : undefined,
+    featured: Boolean(data.featured),
     stack: Array.isArray(data.stack) ? data.stack.map(String) : undefined,
     role: data.role ? String(data.role) : undefined,
-    links: data.links && typeof data.links === "object"
-      ? {
-          github: typeof data.links.github === "string" ? data.links.github : undefined,
-          demo: typeof data.links.demo === "string" ? data.links.demo : undefined,
-          doc: typeof data.links.doc === "string" ? data.links.doc : undefined,
-        }
-      : undefined,
+    links:
+      data.links && typeof data.links === "object"
+        ? {
+            github:
+              typeof data.links.github === "string" ? data.links.github : undefined,
+            demo: typeof data.links.demo === "string" ? data.links.demo : undefined,
+            doc: typeof data.links.doc === "string" ? data.links.doc : undefined,
+          }
+        : undefined,
   };
 
   const contentHtml = await markdownToHtml(content);
@@ -105,9 +109,15 @@ export async function getAllPortfolio(): Promise<PortfolioMeta[]> {
       title: p.title,
       date: p.date,
       description: p.description,
+      featured: p.featured,
       stack: p.stack,
       role: p.role,
       links: p.links,
     }))
-    .sort((a, b) => ((a.date ?? "") < (b.date ?? "") ? 1 : -1));
+    .sort((a, b) => {
+      const af = a.featured ? 1 : 0;
+      const bf = b.featured ? 1 : 0;
+      if (af !== bf) return bf - af;
+      return (a.date ?? "") < (b.date ?? "") ? 1 : -1;
+    });
 }
