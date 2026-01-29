@@ -186,9 +186,10 @@ class DailyDodgerScene extends Phaser.Scene {
     this.hudScore.setText(`SCORE ${this.score}`);
 
     // Clean bullets out of bounds
-    this.bullets.children.each((obj) => {
+    this.bullets.children.each((obj: Phaser.GameObjects.GameObject) => {
       const b = obj as Phaser.GameObjects.Ellipse;
       if (b.x < -50 || b.x > w + 50 || b.y < -50 || b.y > h + 50) b.destroy();
+      return true; // Phaser's each callback expects boolean | null | void, but let's be safe for TS strictness
     });
 
     // Stage progression
