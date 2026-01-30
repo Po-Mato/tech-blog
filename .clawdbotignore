@@ -1,0 +1,8 @@
+node_modules/
+.next/
+.nuxt/
+dist/
+package-lock.json
+pnpm-lock.yaml
+*.svg
+*.png
