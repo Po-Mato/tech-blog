@@ -11,6 +11,17 @@ const nextConfig: NextConfig = {
   // 유저/조직 Pages(예: https://<user>.github.io/)는 비워두면 됩니다.
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || "",
   assetPrefix: process.env.NEXT_PUBLIC_BASE_PATH || "",
+
+  // Next.js 16.1 performance optimizations
+  experimental: {
+    // Enable optimized package imports for better tree-shaking
+    optimizePackageImports: ["react-aria-components", "three", "phaser"],
+  },
+
+  // Turbopack configuration (Next.js 16+ default)
+  turbopack: {
+    // Empty config to acknowledge Turbopack usage
+  },
 };
 
 export default nextConfig;

@@ -1,9 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { DailyGame } from "../../src/lib/games";
-import DailyDodger from "./templates/phaser/DailyDodger";
+
+const DailyDodger = dynamic(() => import("./templates/phaser/DailyDodger"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-[500px] items-center justify-center text-white/60">
+      게임 로딩 중...
+    </div>
+  ),
+});
 
 type GameRecord =
   | {
