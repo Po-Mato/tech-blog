@@ -13,12 +13,34 @@ const items: NavItem[] = [
 export default function SiteNav() {
   return (
     <div className="sticky top-0 z-20 border-b border-white/10 bg-black/30 backdrop-blur">
-      <nav className="mx-auto flex max-w-3xl items-center gap-3 px-10 py-3 text-sm text-white/80">
+      <nav 
+        className="mx-auto flex max-w-3xl items-center gap-3 px-10 py-3 text-sm text-white/80"
+        aria-label="Main navigation"
+        role="navigation"
+      >
         {items.map((it) => (
           <Link
             key={it.href}
             href={it.href}
-            className="rounded-full border border-white/10 bg-white/5 px-3 py-1 hover:bg-white/10"
+            className="
+              rounded-full 
+              border 
+              border-white/10 
+              bg-white/5 
+              px-3 
+              py-1 
+              hover:bg-white/10
+              hover:border-white/20
+              hover:scale-105
+              active:scale-95
+              transition-all
+              duration-200
+              ease-in-out
+              focus-visible:ring-2
+              focus-visible:ring-white/50
+              focus-visible:ring-offset-2
+              focus-visible:ring-offset-black/50
+            "
           >
             {it.label}
           </Link>

@@ -59,16 +59,53 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl p-10 text-white">
-      <article className="rounded-xl border border-white/10 bg-black/30 p-8 backdrop-blur">
-        <div className="text-sm text-white/60">{post.date}</div>
-        <h1 className="mt-2 text-4xl font-bold">{post.title}</h1>
-        {post.description ? (
-          <p className="mt-3 text-white/80">{post.description}</p>
-        ) : null}
+    <main 
+      id="main-content" 
+      className="mx-auto max-w-3xl p-10 text-white"
+      role="main"
+    >
+      <article 
+        className="
+          rounded-xl 
+          border 
+          border-white/10 
+          bg-black/30 
+          p-8 
+          backdrop-blur
+          hover:border-white/15
+          transition-all
+          duration-300
+        "
+        itemScope 
+        itemType="https://schema.org/BlogPosting"
+      >
+        <header>
+          <time 
+            dateTime={post.date} 
+            className="text-sm text-white/60"
+            itemProp="datePublished"
+          >
+            {post.date}
+          </time>
+          <h1 
+            className="mt-2 text-4xl font-bold leading-tight"
+            itemProp="headline"
+          >
+            {post.title}
+          </h1>
+          {post.description ? (
+            <p 
+              className="mt-3 text-white/80 leading-relaxed"
+              itemProp="description"
+            >
+              {post.description}
+            </p>
+          ) : null}
+        </header>
 
         <div
           className="prose prose-invert mt-8 max-w-none"
+          itemProp="articleBody"
           // content는 로컬 markdown에서 생성되며, rehype-sanitize로 최소한의 HTML 정리를 거칩니다.
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />

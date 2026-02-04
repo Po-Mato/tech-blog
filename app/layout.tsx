@@ -5,16 +5,21 @@ import "./globals.css";
 
 import DynamicUniverse from "../src/components/DynamicUniverse";
 import SiteNav from "../src/components/SiteNav";
+import SkipToContent from "../src/components/SkipToContent";
 import { site } from "../src/lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -56,6 +61,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
+        <SkipToContent />
         <DynamicUniverse />
         <div className="relative z-10 min-h-full">
           <SiteNav />
