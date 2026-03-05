@@ -93,5 +93,9 @@ export async function getAllPosts(): Promise<PostMeta[]> {
       description: p.description,
       tags: p.tags,
     }))
-    .sort((a, b) => (a.date < b.date ? 1 : -1));
+    .sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return dateB - dateA;
+    });
 }
