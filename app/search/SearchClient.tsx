@@ -27,13 +27,15 @@ function highlightHtml(text: string, q: string): string {
   const terms = getQueryTerms(q);
   if (!terms.length) return escaped;
 
-  // Highlight longer terms first.
   const sorted = [...terms].sort((a, b) => b.length - a.length);
   let out = escaped;
 
   for (const term of sorted) {
     const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig");
-    out = out.replace(re, '<mark class="rounded bg-yellow-300/20 px-1">$1</mark>');
+    out = out.replace(
+      re,
+      '<mark class="rounded bg-cyan-300/20 px-1 text-cyan-50">$1</mark>',
+    );
   }
 
   return out;
@@ -147,12 +149,11 @@ export default function SearchClient() {
   }, [miniSearch, q, sortMode, tagFilter]);
 
   return (
-    <main className="mx-auto max-w-3xl p-10 text-white">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold">검색</h1>
-        <p className="mt-3 text-lg text-white/80">
-          제목/설명/태그/본문에서 검색합니다.
-        </p>
+    <main className="mx-auto max-w-5xl px-6 pb-16 pt-12 text-white md:px-8">
+      <header className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur">
+        <p className="text-xs font-medium tracking-[0.22em] text-cyan-200/80">SEARCH</p>
+        <h1 className="mt-2 text-4xl font-semibold">통합 검색</h1>
+        <p className="mt-3 text-white/75">제목/설명/태그/본문 전체에서 검색합니다.</p>
       </header>
 
       <div className="mb-6 space-y-3">
@@ -160,7 +161,7 @@ export default function SearchClient() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="예: nextjs, threejs, i18n ..."
-          className="w-full rounded-xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder:text-white/40 outline-none focus:border-white/30"
+          className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-cyan-300/40"
         />
 
         <div className="flex flex-wrap items-center gap-3">
@@ -169,7 +170,7 @@ export default function SearchClient() {
             <select
               value={tagFilter}
               onChange={(e) => setTagFilter(e.target.value)}
-              className="ml-2 rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-white"
+              className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white"
             >
               <option value="all">전체</option>
               {allTags.map((t) => (
@@ -185,47 +186,45 @@ export default function SearchClient() {
             <select
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as SortMode)}
-              className="ml-2 rounded-lg border border-white/10 bg-black/40 px-2 py-1 text-white"
+              className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white"
             >
               <option value="relevance">관련도</option>
               <option value="new">최신순</option>
             </select>
           </label>
 
-          <span className="text-sm text-white/60">
-            Tip: URL로도 검색 가능 → <code className="text-white/70">/search?q=nextjs</code>
+          <span className="text-sm text-white/55">
+            Tip: <code className="text-white/70">/search?q=nextjs</code>
           </span>
         </div>
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-white/10 bg-black/30 p-6">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">인덱스를 불러오는 중...</p>
         </div>
       ) : !q.trim() ? (
-        <div className="rounded-xl border border-white/10 bg-black/30 p-6">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">검색어를 입력해줘.</p>
         </div>
       ) : results.length === 0 ? (
-        <div className="rounded-xl border border-white/10 bg-black/30 p-6">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">검색 결과가 없어요.</p>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <ul className="grid gap-4 md:grid-cols-2">
           {results.map((r) => (
             <li
               key={r.id}
-              className="rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur"
+              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition hover:border-cyan-300/30 hover:bg-black/35"
             >
-              {r.date ? (
-                <div className="text-sm text-white/60">{r.date}</div>
-              ) : null}
-              <div className="text-xs text-white/50">
+              {r.date ? <div className="text-sm text-white/60">{r.date}</div> : null}
+              <div className="text-xs tracking-wide text-white/50">
                 {r.type === "portfolio" ? "PORTFOLIO" : "POST"}
               </div>
-              <h2 className="mt-1 text-2xl font-semibold">
+              <h2 className="mt-1 text-xl font-semibold">
                 <Link
-                  className="hover:underline"
+                  className="transition hover:text-cyan-100"
                   href={r.type === "portfolio" ? `/portfolio/${r.slug}/` : `/posts/${r.slug}/`}
                 >
                   <span
@@ -238,14 +237,13 @@ export default function SearchClient() {
 
               {r.description ? (
                 <p
-                  className="mt-2 text-white/80"
+                  className="mt-2 text-sm text-white/80"
                   dangerouslySetInnerHTML={{
                     __html: highlightHtml(r.description, q),
                   }}
                 />
               ) : null}
 
-              {/* small snippet from content (not stored in MiniSearch results) */}
               {(() => {
                 const doc = docs.find((d) => d.slug === r.slug && d.type === r.type);
                 const snippet = doc ? buildSnippet(doc.content, q) : "";
@@ -277,8 +275,7 @@ export default function SearchClient() {
 
       <footer className="mt-10 text-sm text-white/50">
         <p>
-          인덱스 문서는 <code className="text-white/60">/search-index.json</code>에서
-          제공됩니다.
+          인덱스 문서: <code className="text-white/60">/search-index.json</code>
         </p>
       </footer>
     </main>

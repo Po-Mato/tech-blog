@@ -4,8 +4,6 @@ import { notFound } from "next/navigation";
 import { getPostBySlug, getPostSlugs } from "../../../src/lib/posts";
 import { site } from "../../../src/lib/site";
 
-// 정적 호스팅(GitHub Pages + output: export)에서는
-// 동적 라우트도 강제로 정적 생성되도록 지정해야 안전합니다.
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
@@ -59,17 +57,16 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl p-10 text-white">
-      <article className="rounded-xl border border-white/10 bg-black/30 p-8 backdrop-blur">
+    <main className="mx-auto max-w-5xl px-6 pb-16 pt-12 text-white md:px-8">
+      <article className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 backdrop-blur md:p-10">
         <div className="text-sm text-white/60">{post.date}</div>
-        <h1 className="mt-2 text-4xl font-bold">{post.title}</h1>
+        <h1 className="mt-2 text-3xl font-semibold leading-tight md:text-5xl">{post.title}</h1>
         {post.description ? (
-          <p className="mt-3 text-white/80">{post.description}</p>
+          <p className="mt-4 text-base text-white/75 md:text-lg">{post.description}</p>
         ) : null}
 
         <div
-          className="prose prose-invert mt-8 max-w-none"
-          // content는 로컬 markdown에서 생성되며, rehype-sanitize로 최소한의 HTML 정리를 거칩니다.
+          className="prose prose-invert prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/40 mt-10 max-w-none prose-headings:tracking-tight prose-p:text-white/80"
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
       </article>

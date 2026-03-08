@@ -24,36 +24,39 @@ export default async function TagPage({
   if (!tag) notFound();
 
   return (
-    <main className="mx-auto max-w-3xl p-10 text-white">
-      <header className="mb-10">
-        <div className="text-sm text-white/60">
-          <Link className="hover:underline" href="/tags/">
-            태그
+    <main className="mx-auto max-w-5xl px-6 pb-16 pt-12 text-white md:px-8">
+      <header className="mb-10 rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur">
+        <div className="text-xs tracking-[0.2em] text-white/55">
+          <Link className="transition hover:text-cyan-100" href="/tags/">
+            TAGS
           </Link>
         </div>
-        <h1 className="mt-2 text-4xl font-bold">#{tag}</h1>
-        <p className="mt-3 text-lg text-white/80">{posts.length}개의 글</p>
+        <h1 className="mt-2 text-4xl font-semibold">#{tag}</h1>
+        <p className="mt-3 text-white/75">{posts.length}개의 글</p>
       </header>
 
       {posts.length === 0 ? (
-        <div className="rounded-xl border border-white/10 bg-black/30 p-6">
+        <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">해당 태그의 글이 없습니다.</p>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <ul className="grid gap-4 md:grid-cols-2">
           {posts.map((post) => (
             <li
               key={post.slug}
-              className="rounded-xl border border-white/10 bg-black/30 p-6 backdrop-blur"
+              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition hover:border-white/20 hover:bg-black/40"
             >
               <div className="text-sm text-white/60">{post.date}</div>
-              <h2 className="mt-1 text-2xl font-semibold">
-                <Link className="hover:underline" href={`/posts/${post.slug}/`}>
+              <h2 className="mt-1 text-xl font-semibold">
+                <Link
+                  className="transition hover:text-cyan-100"
+                  href={`/posts/${post.slug}/`}
+                >
                   {post.title}
                 </Link>
               </h2>
               {post.description ? (
-                <p className="mt-2 text-white/80">{post.description}</p>
+                <p className="mt-2 text-sm text-white/78">{post.description}</p>
               ) : null}
               {post.tags?.length ? (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -61,7 +64,7 @@ export default async function TagPage({
                     <Link
                       key={t}
                       href={`/tags/${tagToSlug(t)}/`}
-                      className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 hover:bg-white/10"
+                      className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100"
                     >
                       #{t}
                     </Link>
