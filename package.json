@@ -8,6 +8,8 @@
     "build": "next build && node scripts/generate-rss.mjs",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "generate:daily-game": "node scripts/generate-daily-game.mjs"
   },
   "dependencies": {
@@ -36,6 +38,7 @@
     "eslint": "^9.39.2",
     "eslint-config-next": "16.0.10",
     "tailwindcss": "^4.1.18",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }
