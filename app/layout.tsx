@@ -54,7 +54,7 @@ export default async function RootLayout({
   return (
     <html lang={lang} dir={isRTL(lang) ? "rtl" : "ltr"} className="h-full">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-full transition-colors duration-500`}
       >
         <DynamicUniverse />
         <div className="relative z-10 min-h-full">

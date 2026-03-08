@@ -57,16 +57,19 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-12 text-white md:px-8">
-      <article className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 backdrop-blur md:p-10">
+    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+      <article className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 backdrop-blur transition duration-500 hover:border-cyan-300/30 hover:shadow-cyan-900/30 md:p-10">
         <div className="text-sm text-white/60">{post.date}</div>
-        <h1 className="mt-2 text-3xl font-semibold leading-tight md:text-5xl">{post.title}</h1>
+        <h1 className="mt-2 text-3xl font-bold leading-snug md:text-5xl">
+          {post.title}
+        </h1>
         {post.description ? (
-          <p className="mt-4 text-base text-white/75 md:text-lg">{post.description}</p>
+          <p className="mt-4 text-base text-white/80 md:text-lg">{post.description}</p>
         ) : null}
 
         <div
-          className="prose prose-invert prose-pre:border prose-pre:border-white/10 prose-pre:bg-black/40 mt-10 max-w-none prose-headings:tracking-tight prose-p:text-white/80"
+          className="prose prose-invert mt-10 max-w-none prose-headings:tracking-tight prose-p:text-white/80 prose-a:text-cyan-300 prose-a:transition prose-a:hover:text-cyan-100 prose-li:marker:text-cyan-300"
+          // content는 로컬 markdown에서 생성되며, rehype-sanitize로 최소한의 HTML 정리를 거칩니다.
           dangerouslySetInnerHTML={{ __html: post.contentHtml }}
         />
       </article>

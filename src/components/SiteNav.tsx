@@ -15,6 +15,7 @@ const items: NavItem[] = [
 
 function isActive(pathname: string, href: string) {
   if (href === "/") return pathname === "/";
+  if (href.startsWith("/tags/")) return pathname.startsWith("/tags/");
   return pathname.startsWith(href);
 }
 
@@ -22,26 +23,29 @@ export default function SiteNav() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/35 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3 md:px-8">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-black/45 backdrop-blur-2xl transition duration-300">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-8">
         <Link
           href="/"
-          className="text-sm font-semibold tracking-[0.18em] text-white/85 transition hover:text-white"
+          className="w-fit text-sm font-semibold tracking-[0.16em] text-white/90 transition duration-300 hover:text-cyan-100"
         >
           PO-MATO DEVLOG
         </Link>
 
-        <nav className="flex flex-wrap items-center gap-2 text-sm">
+        <nav
+          aria-label="메인 네비게이션"
+          className="-mx-1 flex items-center gap-2 overflow-x-auto px-1 pb-1 text-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
           {items.map((it) => {
             const active = isActive(pathname, it.href);
             return (
               <Link
                 key={it.href}
                 href={it.href}
-                className={`rounded-full border px-3 py-1.5 transition ${
+                className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition duration-200 ${
                   active
-                    ? "border-cyan-300/50 bg-cyan-300/15 text-cyan-100 shadow-[0_0_0_1px_rgba(56,189,248,0.2)]"
-                    : "border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:bg-white/10 hover:text-white"
+                    ? "border-cyan-300/50 bg-cyan-300/20 text-cyan-50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]"
+                    : "border-white/10 bg-white/[0.06] text-white/75 hover:border-white/20 hover:bg-white/12 hover:text-white"
                 }`}
               >
                 {it.label}

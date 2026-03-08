@@ -10,28 +10,28 @@ export default async function Home() {
   const restPosts = posts.slice(1);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-12 text-white md:px-8">
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 backdrop-blur-xl md:p-10">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.20),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(167,139,250,0.16),transparent_38%)]" />
+    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 backdrop-blur-xl md:p-10 transition duration-500 hover:border-cyan-300/30 hover:shadow-cyan-900/30">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.15),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(167,139,250,0.10),transparent_38%)]" />
 
         <div className="relative">
           <p className="text-xs font-medium tracking-[0.25em] text-cyan-200/80">
-            TECH BLOG
+            DEVLOG
           </p>
-          <h1 className="mt-3 text-4xl font-semibold leading-tight md:text-5xl">
-            실험, 설계, 시행착오를
-            <br className="hidden md:block" />
-            기록하는 개발 아카이브
+          <h1 className="mt-2 text-4xl font-bold leading-tight md:text-6xl">
+            실험과 설계의
+            <br />
+            고급화 기록
           </h1>
           <p className="mt-4 max-w-2xl text-base text-white/75 md:text-lg">
-            단순한 튜토리얼 복붙이 아닌, 실제 문제를 부딪히며 해결한 과정과
-            인사이트를 정리합니다.
+            복잡한 기술 스택을 깊이 파고든 과정, 아키텍처 의사결정 및 시행착오를
+            투명하게 공유합니다.
           </p>
 
-          <div className="mt-6 flex flex-wrap items-center gap-2">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <Link
               href="/search/"
-              className="rounded-full border border-cyan-200/40 bg-cyan-300/15 px-4 py-2 text-sm font-medium text-cyan-50 transition hover:bg-cyan-300/25"
+              className="rounded-full border border-cyan-300/50 bg-cyan-300/20 px-5 py-2.5 text-sm font-medium text-cyan-50 shadow-lg shadow-cyan-500/20 transition duration-300 hover:bg-cyan-300/30 hover:shadow-cyan-500/35"
             >
               통합 검색
             </Link>
@@ -39,7 +39,7 @@ export default async function Home() {
             {tags.length ? (
               <Link
                 href="/tags/"
-                className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm text-white/85 transition hover:bg-white/15"
+                className="rounded-full border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white/85 transition duration-300 hover:border-white/20 hover:bg-white/15"
               >
                 태그 전체 보기
               </Link>
@@ -47,12 +47,12 @@ export default async function Home() {
           </div>
 
           {tags.length ? (
-            <div className="mt-4 flex flex-wrap gap-2">
+            <div className="mt-5 flex flex-wrap gap-2">
               {tags.slice(0, 8).map(({ tag, count }) => (
                 <Link
                   key={tag}
                   href={`/tags/${tagToSlug(tag)}/`}
-                  className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-white/70 transition hover:border-cyan-200/35 hover:text-cyan-100"
+                  className="rounded-full border border-white/10 bg-black/30 px-3 py-1 text-xs text-white/70 transition duration-200 hover:border-cyan-200/35 hover:text-cyan-100"
                   title={`${count} posts`}
                 >
                   #{tag}
@@ -70,40 +70,40 @@ export default async function Home() {
       ) : (
         <>
           {latestPost ? (
-            <section className="mt-10">
+            <section className="mt-12">
               <h2 className="mb-4 text-sm font-semibold tracking-[0.18em] text-white/55">
-                LATEST
+                LATEST ENTRY
               </h2>
-              <article className="group rounded-2xl border border-white/12 bg-white/[0.03] p-7 backdrop-blur transition hover:border-cyan-200/35 hover:bg-white/[0.05]">
+              <article className="group rounded-2xl border border-white/15 bg-black/30 p-7 shadow-xl backdrop-blur transition duration-300 hover:border-cyan-300/40 hover:bg-black/40">
                 <div className="text-sm text-white/55">{latestPost.date}</div>
-                <h3 className="mt-2 text-2xl font-semibold md:text-3xl">
+                <h3 className="mt-2 text-2xl font-bold leading-snug md:text-3xl">
                   <Link
-                    className="transition group-hover:text-cyan-100"
+                    className="transition group-hover:text-cyan-200"
                     href={`/posts/${latestPost.slug}/`}
                   >
                     {latestPost.title}
                   </Link>
                 </h3>
                 {latestPost.description ? (
-                  <p className="mt-3 text-white/75">{latestPost.description}</p>
+                  <p className="mt-3 text-base text-white/80">{latestPost.description}</p>
                 ) : null}
               </article>
             </section>
           ) : null}
 
           {restPosts.length ? (
-            <section className="mt-10">
-              <h2 className="mb-4 text-sm font-semibold tracking-[0.18em] text-white/55">
-                ALL POSTS
+            <section className="mt-12">
+              <h2 className="mb-5 text-sm font-semibold tracking-[0.18em] text-white/55">
+                ARCHIVES ({restPosts.length} POSTS)
               </h2>
               <ul className="grid gap-4 md:grid-cols-2">
                 {restPosts.map((post) => (
                   <li
                     key={post.slug}
-                    className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition hover:border-white/20 hover:bg-black/40"
+                    className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-200 hover:border-white/20 hover:bg-black/40"
                   >
                     <div className="text-sm text-white/55">{post.date}</div>
-                    <h3 className="mt-2 text-xl font-semibold leading-snug">
+                    <h3 className="mt-1 text-xl font-semibold leading-snug">
                       <Link
                         className="transition hover:text-cyan-100"
                         href={`/posts/${post.slug}/`}
@@ -120,7 +120,7 @@ export default async function Home() {
                           <Link
                             key={t}
                             href={`/tags/${tagToSlug(t)}/`}
-                            className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                            className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/70 transition duration-200 hover:border-cyan-300/35 hover:text-cyan-100"
                           >
                             #{t}
                           </Link>

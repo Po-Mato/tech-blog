@@ -48,7 +48,7 @@ export default function PortfolioClient({ items }: { items: PortfolioMeta[] }) {
           <select
             value={stackFilter}
             onChange={(e) => setStackFilter(e.target.value)}
-            className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white"
+            className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
           >
             <option value="all">전체</option>
             {allStacks.map((s) => (
@@ -64,7 +64,7 @@ export default function PortfolioClient({ items }: { items: PortfolioMeta[] }) {
           <select
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as SortMode)}
-            className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white"
+            className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
           >
             <option value="featured">추천</option>
             <option value="new">최신</option>
@@ -75,11 +75,11 @@ export default function PortfolioClient({ items }: { items: PortfolioMeta[] }) {
         <span className="text-sm text-white/60">{filtered.length}개</span>
       </div>
 
-      <ul className="grid gap-4 md:grid-cols-2">
+      <ul className="space-y-4">
         {filtered.map((p) => (
           <li
             key={p.slug}
-            className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition hover:border-cyan-300/30 hover:bg-black/35"
+            className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-300 hover:border-cyan-300/35 hover:bg-black/40"
           >
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
               {p.featured ? (
@@ -91,7 +91,7 @@ export default function PortfolioClient({ items }: { items: PortfolioMeta[] }) {
               {p.role ? <div className="text-sm text-white/60">Role: {p.role}</div> : null}
             </div>
 
-            <h2 className="mt-2 text-xl font-semibold">
+            <h2 className="mt-2 text-xl font-semibold leading-snug">
               <Link className="transition hover:text-cyan-100" href={`/portfolio/${p.slug}/`}>
                 {p.title}
               </Link>
@@ -106,7 +106,7 @@ export default function PortfolioClient({ items }: { items: PortfolioMeta[] }) {
                     key={s}
                     type="button"
                     onClick={() => setStackFilter(s)}
-                    className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 transition hover:border-cyan-300/35 hover:text-cyan-100"
+                    className="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-xs text-white/70 transition duration-200 hover:border-cyan-300/35 hover:text-cyan-100"
                     title="이 스택으로 필터"
                   >
                     {s}

@@ -1,3 +1,5 @@
+import path from "node:path";
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -20,7 +22,8 @@ const nextConfig: NextConfig = {
 
   // Turbopack configuration (Next.js 16+ default)
   turbopack: {
-    // Empty config to acknowledge Turbopack usage
+    // 여러 lockfile이 있는 환경(로컬/CI)에서도 프로젝트 루트를 명확히 고정
+    root: path.resolve(__dirname),
   },
 };
 

@@ -149,10 +149,10 @@ export default function SearchClient() {
   }, [miniSearch, q, sortMode, tagFilter]);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-12 text-white md:px-8">
-      <header className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur">
+    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+      <header className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur transition duration-300 hover:border-cyan-300/30">
         <p className="text-xs font-medium tracking-[0.22em] text-cyan-200/80">SEARCH</p>
-        <h1 className="mt-2 text-4xl font-semibold">통합 검색</h1>
+        <h1 className="mt-2 text-4xl font-bold">통합 검색</h1>
         <p className="mt-3 text-white/75">제목/설명/태그/본문 전체에서 검색합니다.</p>
       </header>
 
@@ -170,7 +170,7 @@ export default function SearchClient() {
             <select
               value={tagFilter}
               onChange={(e) => setTagFilter(e.target.value)}
-              className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white"
+              className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
             >
               <option value="all">전체</option>
               {allTags.map((t) => (
@@ -186,7 +186,7 @@ export default function SearchClient() {
             <select
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as SortMode)}
-              className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white"
+              className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
             >
               <option value="relevance">관련도</option>
               <option value="new">최신순</option>
@@ -216,7 +216,7 @@ export default function SearchClient() {
           {results.map((r) => (
             <li
               key={r.id}
-              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition hover:border-cyan-300/30 hover:bg-black/35"
+              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-300 hover:border-cyan-300/30 hover:bg-black/35"
             >
               {r.date ? <div className="text-sm text-white/60">{r.date}</div> : null}
               <div className="text-xs tracking-wide text-white/50">
@@ -224,7 +224,7 @@ export default function SearchClient() {
               </div>
               <h2 className="mt-1 text-xl font-semibold">
                 <Link
-                  className="transition hover:text-cyan-100"
+                  className="hover:text-cyan-100"
                   href={r.type === "portfolio" ? `/portfolio/${r.slug}/` : `/posts/${r.slug}/`}
                 >
                   <span

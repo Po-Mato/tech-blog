@@ -17,7 +17,7 @@ type ClientProvidersProps = {
 };
 
 export function ClientProviders({ lang, children }: ClientProvidersProps) {
-  let router = useRouter();
+  const router = useRouter(); // const -> const로 변경하여 ESLint 에러 해결
 
   return (
     <I18nProvider locale={lang}>

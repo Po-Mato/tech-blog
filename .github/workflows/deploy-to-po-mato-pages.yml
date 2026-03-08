@@ -28,6 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: pnpm
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
@@ -36,10 +37,17 @@ jobs:
           run_install: false
 
       - name: Install
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build (Next export)
         run: pnpm build
+
+      - name: Check deploy token
+        run: |
+          if [ -z "${{ secrets.PERSONAL_TOKEN }}" ]; then
+            echo "PERSONAL_TOKEN secret is missing. Add a PAT with repo scope to deploy to Po-Mato/Po-Mato.github.io."
+            exit 1
+          fi
 
       - name: Deploy to Po-Mato.github.io
         uses: peaceiris/actions-gh-pages@v3

@@ -1,8 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --background: #06080d;
-  --foreground: #ecf2ff;
+  --background: oklch(0.13 0.02 256);
+  --foreground: oklch(0.95 0.01 255);
+  --primary-accent: oklch(0.77 0.13 218);
+  --primary-shadow: color-mix(in oklab, var(--primary-accent) 28%, transparent);
 }
 
 @theme inline {
@@ -24,13 +26,14 @@ body {
 
 body {
   background:
-    radial-gradient(circle at 10% -10%, rgba(34, 211, 238, 0.14), transparent 35%),
-    radial-gradient(circle at 90% 0%, rgba(167, 139, 250, 0.16), transparent 30%),
-    linear-gradient(180deg, #06080d 0%, #080b12 45%, #06080d 100%);
+    radial-gradient(circle at 8% -8%, oklch(0.68 0.16 218 / 0.16), transparent 34%),
+    radial-gradient(circle at 88% 2%, oklch(0.66 0.12 300 / 0.13), transparent 36%),
+    linear-gradient(180deg, oklch(0.12 0.02 256) 0%, oklch(0.14 0.02 256) 52%, oklch(0.12 0.02 256) 100%);
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   position: relative;
+  transition: color 300ms ease, background-color 300ms ease, border-color 300ms ease;
 }
 
 #universe {
@@ -41,10 +44,16 @@ body {
   height: 100vh;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.34;
+  opacity: 0.2;
 }
 
 ::selection {
-  background: rgba(103, 232, 249, 0.26);
-  color: #ecfeff;
+  background: oklch(0.77 0.13 218 / 0.25);
+  color: oklch(0.98 0 0);
+}
+
+.premium-shadow {
+  box-shadow:
+    0 14px 24px -20px var(--primary-shadow),
+    0 8px 14px -16px var(--primary-shadow);
 }

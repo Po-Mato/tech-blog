@@ -1,8 +1,6 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
-import { getAllPosts } from "../../../src/lib/posts";
-import { getAllTags, tagToSlug } from "../../../src/lib/tags";
+import { getAllTags, tagToSlug } from "../../src/lib/tags";
 
 export const dynamic = "force-static";
 

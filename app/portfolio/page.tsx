@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { getAllPortfolio } from "../../src/lib/portfolio";
-import PortfolioClient from "./PortfolioClient";
 
 export const dynamic = "force-static";
 
@@ -51,7 +50,7 @@ export default async function PortfolioPage() {
           {items.map((p) => (
             <li
               key={p.slug}
-              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-200 hover:border-white/20 hover:bg-black/40"
+              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-200 hover:border-cyan-300/35 hover:bg-black/40"
             >
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 {p.featured ? (
