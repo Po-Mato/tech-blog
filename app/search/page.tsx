@@ -8,7 +8,7 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+        <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 text-white md:px-8">
           <header className="mb-8">
             <h1 className="text-4xl font-semibold">검색</h1>
             <p className="mt-3 text-white/75">로딩 중...</p>

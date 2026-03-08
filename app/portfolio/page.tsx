@@ -8,7 +8,7 @@ export default async function PortfolioPage() {
   const items = await getAllPortfolio();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+    <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 text-white md:px-8">
       <header className="mb-10 rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 backdrop-blur-xl md:p-10 transition duration-500 hover:border-cyan-300/30 hover:shadow-cyan-900/30">
         <p className="text-xs font-medium tracking-[0.25em] text-cyan-200/80">
           PROJECTS

@@ -57,7 +57,7 @@ export default async function PostPage({
   if (!post) notFound();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+    <main className="mx-auto max-w-4xl px-5 pb-20 pt-8 text-white md:px-8">
       <article className="rounded-3xl border border-white/10 bg-white/[0.03] p-7 shadow-2xl shadow-black/20 backdrop-blur transition duration-500 hover:border-cyan-300/30 hover:shadow-cyan-900/30 md:p-10">
         <div className="text-sm text-white/60">{post.date}</div>
         <h1 className="mt-2 text-3xl font-bold leading-snug md:text-5xl">

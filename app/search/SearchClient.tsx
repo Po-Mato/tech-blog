@@ -149,25 +149,27 @@ export default function SearchClient() {
   }, [miniSearch, q, sortMode, tagFilter]);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+    <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 text-white md:px-8">
       <header className="mb-8 rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur transition duration-300 hover:border-cyan-300/30">
         <p className="text-xs font-medium tracking-[0.22em] text-cyan-200/80">SEARCH</p>
         <h1 className="mt-2 text-4xl font-bold">통합 검색</h1>
         <p className="mt-3 text-white/75">제목/설명/태그/본문 전체에서 검색합니다.</p>
       </header>
 
-      <div className="mb-6 space-y-3">
+      <div className="mb-7 space-y-3">
         <input
+          aria-label="검색어"
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="예: nextjs, threejs, i18n ..."
-          className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-cyan-300/40"
+          className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-cyan-300/40 focus:ring-2 focus:ring-cyan-300/20"
         />
 
         <div className="flex flex-wrap items-center gap-3">
           <label className="text-sm text-white/70">
             태그
             <select
+              aria-label="태그 필터"
               value={tagFilter}
               onChange={(e) => setTagFilter(e.target.value)}
               className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
@@ -184,6 +186,7 @@ export default function SearchClient() {
           <label className="text-sm text-white/70">
             정렬
             <select
+              aria-label="정렬 방식"
               value={sortMode}
               onChange={(e) => setSortMode(e.target.value as SortMode)}
               className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"

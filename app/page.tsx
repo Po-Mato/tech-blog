@@ -10,15 +10,15 @@ export default async function Home() {
   const restPosts = posts.slice(1);
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.03] p-8 shadow-2xl shadow-black/30 backdrop-blur-xl md:p-10 transition duration-500 hover:border-cyan-300/30 hover:shadow-cyan-900/30">
+    <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 text-white md:px-8">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.04] p-7 shadow-2xl shadow-black/30 backdrop-blur-xl transition duration-500 hover:border-cyan-300/30 hover:shadow-cyan-900/30 md:p-10">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.15),transparent_45%),radial-gradient(circle_at_bottom_left,rgba(167,139,250,0.10),transparent_38%)]" />
 
         <div className="relative">
           <p className="text-xs font-medium tracking-[0.25em] text-cyan-200/80">
             DEVLOG
           </p>
-          <h1 className="mt-2 text-4xl font-bold leading-tight md:text-6xl">
+          <h1 className="mt-2 text-3xl font-bold leading-tight sm:text-4xl md:text-6xl">
             실험과 설계의
             <br />
             고급화 기록
@@ -70,7 +70,7 @@ export default async function Home() {
       ) : (
         <>
           {latestPost ? (
-            <section className="mt-12">
+            <section className="mt-12 md:mt-14">
               <h2 className="mb-4 text-sm font-semibold tracking-[0.18em] text-white/55">
                 LATEST ENTRY
               </h2>
@@ -92,7 +92,7 @@ export default async function Home() {
           ) : null}
 
           {restPosts.length ? (
-            <section className="mt-12">
+            <section className="mt-12 md:mt-14">
               <h2 className="mb-5 text-sm font-semibold tracking-[0.18em] text-white/55">
                 ARCHIVES ({restPosts.length} POSTS)
               </h2>
@@ -100,7 +100,7 @@ export default async function Home() {
                 {restPosts.map((post) => (
                   <li
                     key={post.slug}
-                    className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-200 hover:border-white/20 hover:bg-black/40"
+                    className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-200 hover:border-cyan-300/35 hover:bg-black/40"
                   >
                     <div className="text-sm text-white/55">{post.date}</div>
                     <h3 className="mt-1 text-xl font-semibold leading-snug">

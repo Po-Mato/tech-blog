@@ -8,7 +8,7 @@ export default async function TagsPage() {
   const tags = await getAllTags();
 
   return (
-    <main className="mx-auto max-w-5xl px-6 pb-16 pt-8 text-white md:px-8">
+    <main className="mx-auto max-w-6xl px-5 pb-20 pt-8 text-white md:px-8">
       <header className="mb-10 rounded-2xl border border-white/10 bg-white/[0.03] p-7 backdrop-blur transition duration-300 hover:border-cyan-300/30">
         <p className="text-xs font-medium tracking-[0.22em] text-cyan-200/80">TAGS</p>
         <h1 className="mt-2 text-4xl font-bold">태그 아카이브</h1>
