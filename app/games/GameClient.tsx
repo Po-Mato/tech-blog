@@ -69,11 +69,7 @@ function clearRecord(date: string) {
 }
 
 export default function GameClient({ game }: { game: DailyGame }) {
-  const [record, setRecord] = useState<GameRecord | null>(null);
-
-  useEffect(() => {
-    setRecord(loadRecord(game.date));
-  }, [game.date]);
+  const [record, setRecord] = useState<GameRecord | null>(() => loadRecord(game.date));
 
   const handleClearQuiz = useCallback(
     (r: Extract<GameRecord, { type: "quiz" }>) => {
@@ -296,12 +292,12 @@ function Memory({
     }));
   }, [game.cards]);
 
-  function flip(id: string) {
+  function flip(id: string, startedAtMs: number) {
     if (matched.has(id)) return;
     if (open.includes(id)) return;
     if (open.length >= 2) return;
 
-    if (startedAt === null) setStartedAt(Date.now());
+    if (startedAt === null) setStartedAt(startedAtMs);
 
     const next = [...open, id];
     setOpen(next);
@@ -361,7 +357,7 @@ function Memory({
               key={c.id}
               type="button"
               className={`aspect-[3/2] rounded-xl border border-white/10 bg-white/5 p-3 text-left hover:bg-white/10`}
-              onClick={() => flip(c.id)}
+              onClick={(e) => flip(c.id, Math.floor(e.timeStamp))}
               disabled={matched.has(c.id)}
             >
               <div className="text-xs text-white/50">{isOpen ? "OPEN" : "HIDDEN"}</div>
