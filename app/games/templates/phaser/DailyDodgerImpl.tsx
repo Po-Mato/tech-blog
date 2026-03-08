@@ -154,7 +154,7 @@ class DailyDodgerScene extends Phaser.Scene {
     this.startStage(this.stage);
   }
 
-  update(_time: number, _delta: number) {
+  update() {
     if (this.ended) return;
 
     const w = this.scale.width;
