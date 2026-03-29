@@ -1,0 +1,11 @@
+{
+  "date": "2026-03-30",
+  "type": "phaser",
+  "template": "dodger",
+  "title": "Daily Dodger — SWARM",
+  "description": "탄막을 피하고 오브를 먹어서 점수를 올려봐. 5 스테이지 생존하면 클리어! (매일 시드/스테이지 팩 변경)",
+  "seed": 20260330,
+  "stagePack": "swarm",
+  "difficulty": 4,
+  "theme": "sunset"
+}
