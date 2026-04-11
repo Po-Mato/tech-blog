@@ -1,0 +1,11 @@
+{
+  "date": "2026-04-12",
+  "type": "phaser",
+  "template": "dodger",
+  "title": "Daily Dodger — CLASSIC",
+  "description": "탄막을 피하고 오브를 먹어서 점수를 올려봐. 5 스테이지 생존하면 클리어! (매일 시드/스테이지 팩 변경)",
+  "seed": 20260412,
+  "stagePack": "classic",
+  "difficulty": 2,
+  "theme": "neon"
+}
