@@ -1,700 +1,566 @@
 ---
-title: "LLM 지능의 포화, 이제 실행 환경(Runtime) 경쟁이다: MCP 시대의 에이전트 아키텍처"
+title: "MCP 다음 단계는 연결이 아니라 운영이다: Observable Agent Runtime 설계"
 date: 2026-04-16
-description: "2026년, 모델 성능이 상향 평준화된 지금, AI 에이전트의 실질적 차별화는 '무슨 모델을 쓰느냐'가 아니라 '어떤 실행 런타임 위에서 도구를 오케스트레이션하느냐'로 이동했다. 브라우저 중심 런타임, 협력적 모델 라우팅, 그리고 MCP Model Context Protocol의 진화를 심층 분석한다."
+description: "2026년의 Agent 시스템은 더 많은 tool을 붙이는 경쟁에서 벗어나, async execution contract, runtime observability, verification gate를 얼마나 단단하게 설계하느냐로 승부가 갈린다. MCP 이후 실무 팀이 바로 적용할 수 있는 운영 중심 아키텍처를 정리한다."
 tags:
   - AI Agents
   - MCP
-  - Agent Architecture
-  - Runtime Orchestration
-  - Cooperative Routing
-  - LLM
+  - Observability
+  - Runtime Verification
+  - Async Execution
+  - TypeScript
   - System Design
-  - Production AI
-  - Browser as Runtime
-  - Model Orchestration
+  - Production Engineering
 ---
 
-## 서론: 모델 전쟁에서 런타임 전쟁으로
+## 왜 지금 이 주제를 다시 봐야 하나
 
-2023년 ChatGPT引爆 이후 3년. LLM 생태계는剧烈的 성장을 거쳐 하나의 정점에 도달했다. GPT-5, Claude 4, Gemini Ultra 2 — 이 이름들이並列해서 등장한다는 것은 곧 **"이 모델이면 충분하다"**는 공리가 성립한다는 뜻이다. 성능의 상향 평준화.
+2026년의 Agent 시스템은 더 이상 `tool 호출이 가능하다`는 사실만으로 차별화되지 않는다. MCP가 tool interface를 정리해 준 뒤부터, 병목은 훨씬 더 운영적인 곳으로 이동했다.
 
-그러나 이 평준화는 에이전트 시스템의 근본적 성격을 바꾸었다. 더 이상 "무슨 모델을 쓰느냐"가 성능의 전부ではなかった. 2026년 현재 AI 에이전트의 실질적 병목은 모델의 파라미터 수가 아니라 **실행 런타임(Execution Runtime)**의 설계 품질이다.
+- long-running task를 어떻게 추적할 것인가
+- 실패한 실행을 어디까지 재시도할 것인가
+- 실행 결과를 어떤 단위로 검증할 것인가
+- 사람이 개입해야 하는 지점을 어떻게 남길 것인가
+- 사고가 났을 때 어느 로그를 보면 원인을 찾을 수 있는가
 
-이 글은 2026년 에이전트 아키텍처의 핵심 축인 **MCP(Model Context Protocol)**를 중심으로, 도구 실행을 오케스트레이션하는 런타임의 설계 원리, 브라우저 중심 실행 환경의 부상, 그리고 협력적 모델 라우팅(Cooperative Model Routing)의 실전 전략을 아키텍처 수준에서 분석한다.
+즉, 문제는 `연결`이 아니라 `운영`이다.
+
+최근 2026년 4월의 Agent 트렌드를 보면 이 흐름이 더 선명하다. 업계의 관심은 단순한 model upgrade가 아니라 다음으로 이동하고 있다.
+
+- runtime security
+- async task orchestration
+- execution trace
+- verification protocol
+- local or browser based execution isolation
+
+이 글에서는 이 흐름을 한 문장으로 압축한다.
+
+> MCP가 tool access를 표준화했다면, 이제 경쟁력은 observable runtime과 verification contract를 얼마나 잘 설계했느냐에서 나온다.
+
+이번 글은 그 설계를 실무 관점에서 풀어본다.
 
 ---
 
-## 1. MCP가 해결한 것, 그리고 새로운 병목의 발견
+## 1. MCP는 시작점일 뿐이다
 
-### 도구와 모델 사이의 파편화된 인터페이스
+MCP는 아주 중요한 문제를 해결했다. model이 어떤 tool을 어떤 schema로 호출해야 하는지 통일된 방식으로 설명할 수 있게 만들었다. 이건 분명히 큰 진전이다.
 
-에이전트 시스템의 본질은 단순하다: **LLM이 도구를 호출하고, 도구가 외부 세계와 상호작용하며, 그 결과가 다시 LLM의 입력이 된다.** 이 루프가 agentic loop다.
+하지만 실제 운영에서는 MCP만으로 해결되지 않는 질문이 훨씬 많다.
 
-문제는 2024년까지 이 루프의 각 연결 고리가 **제각각이었다**는 데 있다:
-
-```
-2024년 이전의 에이전트 시스템:
-─────────────────────────────────────────────────────────
-Model A + 도구 X → 도구 스키마: OpenAPI JSON (직접 파싱)
-Model B + 도구 Y → Function Calling 형식 (모델별 상이)
-Model C + 도구 Z → 자유 텍스트 파싱 (hallucination 위험)
-─────────────────────────────────────────────────────────
-→ 도구 하나를 추가할 때마다 모델별 adapter 개발 필요
-→ 에이전트 개발 = 모델-도구耦合 관리의 지루한 반복 노동
-```
-
-### MCP: 도구 인터페이스의 USB一样了
-
-MCP(Model Context Protocol)는 이 문제를 **도구 인터페이스의 USB**로 해결했다. 모델과 도구 사이 에 adapter 하나만 있으면, 어떤 모델이든 MCP 클라이언트를 통해 동일한 도구 스택에 접근할 수 있다:
-
-```
-MCP 이후 에이전트 시스템:
-─────────────────────────────────────────────────────────
-                    ┌──────────────────────────┐
-                    │     MCP Client           │
-                    │  (모델-AGNOSTIC)         │
-                    └────────────┬─────────────┘
-                                 │ MCP Protocol (JSON-RPC 2.0)
-                    ┌────────────▼─────────────┐
-                    │     MCP Server          │
-                    │  (gRPC / HTTP / stdio)  │
-                    ├──────────────────────────┤
-                    │ Tool Registry           │
-                    │ • filesystem            │
-                    │ • github                │
-                    │ • browser               │
-                    │ • custom...             │
-                    └──────────────────────────┘
-
-→ 도구 추가 = MCP Server에 등록 = 모든 모델에서 즉시 사용 가능
+```text
+사용자 요청
+   │
+   ▼
+Planner model
+   │  tool call 생성
+   ▼
+MCP client
+   │
+   ▼
+MCP server
+   │
+   ├─ tool A 실행
+   ├─ tool B 실행
+   └─ tool C 실행
 ```
 
-MCP의 핵심 명세는 놀라울 정도로 간결하다:
+이 다이어그램은 연결 관점에서는 충분하다. 하지만 운영 관점에서는 빠진 게 많다.
 
-```typescript
-// MCP 도구 스키마의 본질 (TypeScript 타입)
-interface MCPTool {
-  name: string;           // 도구 식별자 (unique)
-  description: string;    // LLM용 자연어 설명 (프롬프트에 직접 주입)
-  inputSchema: {           // JSON Schema — 모델이 파라미터를 추론하는 근거
-    type: "object";
-    properties: Record<string, { type: string; description: string }>;
-    required: string[];
+```text
+사용자 요청
+   │
+   ▼
+Planner
+   │
+   ▼
+Execution Contract Layer
+   │  - idempotency key
+   │  - timeout budget
+   │  - retry policy
+   │  - approval policy
+   ▼
+Runtime Orchestrator
+   │  - queue
+   │  - state store
+   │  - cancellation
+   │  - backpressure
+   ▼
+MCP Tool Runtime
+   │
+   ├─ Trace Collector
+   ├─ Verification Gate
+   ├─ Audit Log
+   └─ Human Review Hook
+```
+
+실무에서 차이가 나는 부분은 이 두 번째 그림이다.
+
+MCP는 tool을 부르는 규칙을 제공한다. 하지만 다음은 여전히 여러분이 설계해야 한다.
+
+- 실행을 큐에 넣을지 즉시 돌릴지
+- retry 가능한 오류와 아닌 오류를 어떻게 나눌지
+- partial success를 어떤 형태로 저장할지
+- side effect가 있는 tool call을 재실행해도 되는지
+- agent가 내린 결론을 바로 반영할지 verification 뒤에 반영할지
+
+정리하면 MCP는 `interface standard`이고, production 경쟁력은 `execution standard`에서 나온다.
+
+---
+
+## 2. 2026년 Agent 시스템의 핵심은 async execution contract다
+
+많은 팀이 아직도 Agent 실행을 request-response로만 생각한다. 사용자가 요청하면 model이 몇 번 생각하고 tool을 부르고 바로 답을 주는 흐름이다. 작은 데모에는 잘 맞는다. 하지만 실제 업무 자동화는 그렇지 않다.
+
+예를 들어 이런 작업을 생각해 보자.
+
+- GitHub issue를 읽고 재현 환경을 만든다
+- staging에 배포해서 smoke test를 돈다
+- browser로 로그인과 결제 흐름을 확인한다
+- 결과를 정리해서 PR comment를 남긴다
+
+이건 몇 초 안에 끝나는 작업이 아니다. 중간에 network jitter도 있고, external API limit도 있고, 사람이 승인해야 하는 단계도 있다. 이 시점부터 필요한 것은 model intelligence보다 `async execution contract`다.
+
+### 실행 계약이 필요한 이유
+
+실행 계약이 없으면 이런 문제가 터진다.
+
+- 같은 작업이 중복 실행된다
+- timeout 뒤에 실제 실행은 계속된다
+- 성공과 실패가 섞인 상태가 저장되지 않는다
+- 사용자는 실패했다고 보는데 외부 시스템은 이미 변경되었다
+- review 없이 side effect가 발생한다
+
+이를 막으려면 모든 agent task가 최소한 아래 필드를 가져야 한다.
+
+```ts
+export type TaskStatus =
+  | 'queued'
+  | 'running'
+  | 'waiting_approval'
+  | 'waiting_external'
+  | 'verifying'
+  | 'completed'
+  | 'failed'
+  | 'cancelled';
+
+export interface AgentTask {
+  taskId: string;
+  requestId: string;
+  idempotencyKey: string;
+  status: TaskStatus;
+  createdAt: string;
+  updatedAt: string;
+  budget: {
+    deadlineMs: number;
+    maxRetries: number;
+    maxToolCalls: number;
   };
-}
-
-interface MCPRequest {
-  jsonrpc: "2.0";
-  id: string | number;
-  method: string;  // "tools/list" | "tools/call" | "resources/read"
-  params?: any;
-}
-
-interface MCPResponse {
-  jsonrpc: "2.0";
-  id: string | number;
-  result?: any;
-  error?: { code: number; message: string; data?: any };
-}
-```
-
-이 단순성이 MCP의 강점이다. 복잡한 프로토콜이 아니라 **"도구 이름 + 설명 + 입력 스키마"**만 있으면 어떤 모델과도interop이 된다.
-
-### 새로운 병목: 프로토콜이 아니라 실행
-
-하지만 여기서 역설이 생긴다. MCP가 도구-*호출*의标准化을 달성한 지금, 남은 문제는 **"호출을 어떻게 실행하느냐"**다.
-
-```
-MCP 이후 발견된 새로운 병목:
-─────────────────────────────────────────────────────────
-1. 도구 실행의 동시성 관리
-   →同一个 도구를 N개 요청이 동시에 호출하면? Race condition.
-
-2. 실행 컨텍스트의 분리와 격리
-   → 도구가 파일 시스템, API, DB에 접근할 때
-     보안 격리 없이 같은 프로세스에서 실행하면?
-
-3. 실행 결과의 상태 관리
-   → 도구 실행 후 에이전트 상태를 어떻게 유지?
-     실패 시 롤백? 재시도?
-
-4. 실행 지연 시간(Execution Latency)
-   → 모델의 token generation 속기는 50-100ms인데,
-     도구 실행이 2-5초 걸리면 전체 agentic loop가 병목.
-─────────────────────────────────────────────────────────
-```
-
-MCP는 **"무엇을 호출할지"**를 정의할 뿐, **"실행 환경 안에서 어떻게 안전하고 빠르게 호출하느냐"**는 별개의 아키텍처 문제다. 2026년, 이 "실행 환경"을 어떻게 설계하느냐가 에이전트의 성능을 가른다.
-
----
-
-## 2. 브라우저, 에이전트의 새로운 OS가 되다
-
-### 왜 브라우저인가
-
-2026년 현재, AI 에이전트의 실행 환경으로 **브라우저**가 급부상하고 있다. 이유는 명확하다:
-
-| 요구사항 | OS 수준 | 브라우저 수준 |
-|---------|--------|-------------|
-| 파일 시스템 접근 | 직접 접근 (보안 위험) | sandboxed filesystem API |
-| 네트워크 요청 | raw socket | fetch/CORS 관리 |
-| 인증 세션 유지 | 수동 쿠키 관리 | automatic session handling |
-| 코드 실행 격리 | 프로세스 격리 | WebContainer/WASM sandbox |
-| UI 자동화 | GUI 자동화 툴 필요 | DOM 직접 조작 |
-| 배포 환경 | 바이너리 배포 | URL만으로 접근 |
-
-브라우저는 **보안이 기본값으로 적용된 샌드박스 실행 환경**이다. 에이전트가 의도치 않게 시스템의 중요한 자원을 손상시키기 전에, 브라우저가 차단한다.
-
-### WebContainer와 에이전트의 코드 실행
-
-브라우저 안에서 Node.js 수준의 코드 실행을可能하게 하는 **WebContainer** 기술은 에이전트의 가능성을 확장한다:
-
-```typescript
-// 브라우저 기반 에이전트 런타임의 개념적 구조
-import { WebContainer } from '@webcontainer/api';
-import { Terminal } from '@webcontainer/api';
-
-class BrowserAgentRuntime {
-  private container: WebContainer;
-  private toolRegistry: Map<string, MCPTool> = new Map();
-  private activeLoops: Map<string, AbortController> = new Map();
-
-  async initialize() {
-    this.container = await WebContainer.boot();
-  }
-
-  async registerTool(tool: MCPTool) {
-    this.toolRegistry.set(tool.name, tool);
-    // 브라우저 샌드박스 내에서 도구 프로세스 Spawn
-    await this.container.spawn('node', ['tools/' + tool.name + '.js']);
-  }
-
-  async executeToolCall(call: ToolCall): Promise<ToolResult> {
-    const tool = this.toolRegistry.get(call.name);
-    if (!tool) throw new Error(`Tool ${call.name} not registered`);
-
-    // Abortable execution — 에이전트 루프 중단 시 즉시 종료
-    const controller = new AbortController();
-    this.activeLoops.set(call.id, controller);
-
-    try {
-      // 샌드박스 내에서 도구 실행
-      const result = await tool.execute(call.arguments, {
-        signal: controller.signal,
-        timeoutMs: 30000, // 30초 타임아웃
-      });
-      return { success: true, result };
-    } catch (error) {
-      return { success: false, error: error.message };
-    } finally {
-      this.activeLoops.delete(call.id);
-    }
-  }
-
-  abortLoop(loopId: string) {
-    // Human-in-the-loop: 사용자가 에이전트 중단 요청
-    this.activeLoops.get(loopId)?.abort();
-  }
-}
-```
-
-### Cooperative Routing: 어디서 실행할 것인가
-
-에이전트 하나라도 **"이 과업은 브라우저에서, 저건 로컬 서버에서, 저건 클라우드 AI에서"**를 판단하고 라우팅하는 것이 cooperative routing이다.
-
-```
-Cooperative Routing 아키텍처:
-─────────────────────────────────────────────────────────
-
-  사용자 요청
-       │
-       ▼
-  ┌─────────────┐
-  │   Router    │ ← 요청의 성격/보안 등급/지연 요구를 분류
-  └──────┬──────┘
-         │
-    ┌────┼────┬────────────┐
-    ▼    ▼    ▼            ▼
- [Local] [Browser]    [Cloud LLM]
- MCP    sandbox    (복잡한 추론만)
- Server
- 실행    실행
-
-  Local: 파일 시스템, CI/CD, git — 즉시, 개인 데이터
-  Browser: UI 자동화, 웹 스크래핑 — 샌드박스, 세션 유지
-  Cloud: 코딩, 분석, 요약 — 고품질 reasoning
-─────────────────────────────────────────────────────────
-```
-
-```typescript
-// Cooperative Router 구현
-type ExecutionTarget = 'local' | 'browser' | 'cloud';
-
-interface TaskProfile {
-  complexity: number;       // 0-1: 추론 복잡도
-  requiresNetwork: boolean; // 외부 API 필요 여부
-  requiresFilesystem: boolean;
-  isSensitive: boolean;      // PII/민감 데이터 처리 여부
-  latencyRequirement: 'realtime' | 'normal' | 'background';
-  estimatedTokens: number;  // 예상 토큰 소비량
-}
-
-function classifyExecutionTarget(profile: TaskProfile): ExecutionTarget {
-  // 1순위: 민감 데이터는 절대 클라우드로 불가 → local
-  if (profile.isSensitive) return 'local';
-
-  // 2순위: 파일 시스템 접근 필요 → local
-  if (profile.requiresFilesystem) return 'local';
-
-  // 3순위: UI 자동화/브라우저 전용 → browser
-  if (profile.requiresNetwork && profile.latencyRequirement === 'realtime') {
-    return 'browser';
-  }
-
-  // 4순위: 복잡한 추론 + 토큰 소비 큼 → cloud
-  if (profile.complexity > 0.7 || profile.estimatedTokens > 8000) {
-    return 'cloud';
-  }
-
-  // 5순위:轻负载な作業 → local 또는 browser
-  return profile.requiresNetwork ? 'browser' : 'local';
-}
-```
-
----
-
-## 3. MCP 런타임 핵심: 확장 가능한 Tool Registry 아키텍처
-
-### Tool Registry의 설계 원칙
-
-에이전트 런타임의核心은 **도구를 등록, 검색, 실행, 모니터링하는 중앙 Registry**다. 여기서 설계가 흔들리면 전체 에이전트의 안정성이 흔들린다.
-
-```typescript
-// 확장 가능한 MCP Tool Registry — 프로덕션 수준의 완전한 구현
-interface MCPTool {
-  name: string;
-  description: string;
-  inputSchema: object;
-  tags: string[];                    // 도구 분류 태그
-  timeoutMs: number;                 // 실행 타임아웃
-  retryPolicy: RetryPolicy;
-  permissions: Permission[];         // 필요 권한 목록
-  execute(params: unknown): Promise<MCPToolResult>;
-}
-
-interface RetryPolicy {
-  maxAttempts: number;
-  backoffMs: number;
-  retryableErrors: string[];         // 재시도 가능한 오류 목록
-}
-
-interface MCPToolResult {
-  success: boolean;
-  data?: unknown;
+  input: {
+    userGoal: string;
+    riskLevel: 'low' | 'medium' | 'high';
+  };
+  output?: {
+    summary: string;
+    artifacts: string[];
+  };
   error?: {
     code: string;
     message: string;
-    recoverable: boolean;            // 재시도 가능 여부
+    retryable: boolean;
   };
-  executionMs: number;               // 실행 시간 (모니터링용)
-  tokensUsed?: number;              // 토큰 소비량
+}
+```
+
+핵심은 `agent가 생각한 내용`보다 `실행 단위가 어떤 상태로 흘러가는가`를 먼저 데이터 모델로 고정하는 것이다.
+
+### 실행 계약의 최소 규칙
+
+내가 추천하는 최소 규칙은 다음 다섯 가지다.
+
+1. 모든 side effect 작업은 `idempotencyKey`를 가진다.
+2. 모든 task는 `deadline`과 `retry budget`를 가진다.
+3. approval이 필요한 단계는 별도 상태로 빠진다.
+4. tool result는 원문과 요약을 함께 저장한다.
+5. completed 전에 반드시 `verifying` 단계를 통과한다.
+
+이 규칙만 지켜도 운영 난이도가 크게 내려간다.
+
+---
+
+## 3. Observable Runtime은 로그가 아니라 실행 그래프다
+
+많은 팀이 observability를 `tool call 로그 남기기` 정도로 이해한다. 하지만 Agent에서는 그걸로 부족하다. 왜냐하면 문제의 핵심이 단일 호출 실패가 아니라, 호출들의 연쇄에서 발생하기 때문이다.
+
+예를 들어 이런 상황을 보자.
+
+- planner가 browser tool을 호출했다
+- login step은 성공했다
+- checkout page에서 AB test variation이 달라졌다
+- fallback selector가 실패했다
+- agent는 empty result를 요약하면서 `상품이 없다`고 결론 냈다
+
+이 사건을 사후 분석하려면 단순 로그가 아니라 실행 그래프가 필요하다.
+
+```text
+task-1842
+ ├─ step-1 plan.generate                420ms   success
+ ├─ step-2 browser.open                 980ms   success
+ ├─ step-3 browser.login               2120ms   success
+ ├─ step-4 browser.find-cart-button    1300ms   failed(selector_not_found)
+ ├─ step-5 fallback.search-button       880ms   failed(selector_not_found)
+ ├─ step-6 model.summarize              610ms   success
+ └─ verdict                            incorrect
+```
+
+여기서 중요한 건 세 가지다.
+
+- **causality**: 어떤 실패가 다음 판단에 영향을 줬는가
+- **timing**: 느린 구간이 어디인가
+- **decision trace**: model이 왜 그런 결론을 냈는가
+
+### 어떤 이벤트를 남겨야 하나
+
+실무에서 최소한 아래 이벤트는 구조화해서 남겨야 한다.
+
+```ts
+interface RuntimeEvent {
+  eventId: string;
+  taskId: string;
+  stepId: string;
+  type:
+    | 'plan_created'
+    | 'tool_started'
+    | 'tool_succeeded'
+    | 'tool_failed'
+    | 'approval_requested'
+    | 'approval_granted'
+    | 'verification_started'
+    | 'verification_failed'
+    | 'task_completed';
+  ts: string;
+  actor: 'planner' | 'tool' | 'verifier' | 'human';
+  toolName?: string;
+  latencyMs?: number;
+  payload: Record<string, unknown>;
+}
+```
+
+주의할 점도 있다. Agent observability는 무조건 많이 쌓는다고 좋은 게 아니다. raw prompt와 raw artifact를 전부 적재하면 비용도 커지고 privacy 문제도 생긴다. 그래서 관측 단위를 나눠야 한다.
+
+- control plane event: 상태 전이, 승인, 취소, 재시도
+- execution event: tool input hash, output digest, latency, error code
+- audit artifact: 필요 시만 전문 저장
+
+즉, `항상 저장할 것`과 `문제가 생겼을 때만 열람할 것`을 분리해야 한다.
+
+---
+
+## 4. Verification은 마지막에 붙이는 QA가 아니다
+
+많은 팀이 verification을 `결과 나온 뒤에 한번 더 검사하는 단계`로 붙인다. 그런데 Agent 시스템에서는 그렇게 하면 늦는 경우가 많다. 이미 side effect가 발생했기 때문이다.
+
+Verification은 사후 검사보다 `실행 경계`로 들어가야 한다.
+
+### 어떤 경계에 verifier를 둘 것인가
+
+가장 효과적인 방식은 아래 세 지점에 verifier를 두는 것이다.
+
+1. **plan gate**: 위험한 tool 조합인지 본다.
+2. **pre-commit gate**: side effect 반영 직전에 본다.
+3. **post-condition gate**: 반영 뒤 시스템 상태가 기대와 맞는지 본다.
+
+예를 들어 GitHub issue triage agent라면 이렇게 된다.
+
+```text
+issue 분석
+  ▼
+plan gate
+  - destructive action 포함 여부
+  - 외부 발송 여부
+  - budget 초과 여부
+  ▼
+sandbox 실행
+  ▼
+pre-commit gate
+  - 재현 성공 증거 존재 여부
+  - 로그와 요약의 일치 여부
+  ▼
+comment 작성 또는 label 변경
+  ▼
+post-condition gate
+  - comment 생성 확인
+  - label 반영 확인
+```
+
+### Verifier는 다른 model이어야 하나
+
+꼭 그렇지는 않다. 더 중요한 건 역할 분리다.
+
+- planner: 일을 진행하려는 성향
+- verifier: 틀린 결론을 막으려는 성향
+
+같은 model을 쓰더라도 prompt contract와 입력 자료를 다르게 구성하면 역할 분리는 가능하다. 다만 high-risk workflow라면 planner와 verifier를 다른 model 혹은 다른 policy budget으로 분리하는 편이 낫다.
+
+아래는 간단한 verification gate 예시다.
+
+```ts
+interface VerificationInput {
+  taskId: string;
+  intendedAction: string;
+  evidence: Array<{
+    kind: 'log' | 'screenshot' | 'json' | 'diff';
+    uri: string;
+    digest: string;
+  }>;
+  assertions: string[];
 }
 
-// Tool Registry 본체
-class MCPToolRegistry {
-  private tools: Map<string, MCPTool> = new Map();
-  private toolIndex: Map<string, Set<string>> = new Map(); // tag → tool names
+interface VerificationResult {
+  passed: boolean;
+  score: number;
+  reasons: string[];
+  requiresHumanReview: boolean;
+}
 
-  register(tool: MCPTool): void {
-    // 1. 도구 검증
-    this.validateTool(tool);
+export async function verifyBeforeCommit(
+  input: VerificationInput,
+): Promise<VerificationResult> {
+  const missingEvidence = input.assertions.filter((assertion) => {
+    return !input.evidence.some((item) => item.kind === 'json' || item.kind === 'diff');
+  });
 
-    // 2. 레지스트리에 등록
-    this.tools.set(tool.name, tool);
-
-    // 3. 태그 인덱스 갱신
-    for (const tag of tool.tags) {
-      if (!this.toolIndex.has(tag)) this.toolIndex.set(tag, new Set());
-      this.toolIndex.get(tag)!.add(tool.name);
-    }
-
-    console.log(`[Registry] Tool registered: ${tool.name} (${tool.tags.join(', ')})`);
-  }
-
-  async executeTool(name: string, params: unknown): Promise<MCPToolResult> {
-    const tool = this.tools.get(name);
-    if (!tool) {
-      return {
-        success: false,
-        error: { code: 'TOOL_NOT_FOUND', message: `Tool '${name}' not found`, recoverable: false },
-      };
-    }
-
-    const start = Date.now();
-
-    // 2단계 실행 패널티 — 재시도 로직
-    let lastError: Error | null = null;
-    for (let attempt = 1; attempt <= tool.retryPolicy.maxAttempts; attempt++) {
-      try {
-        const result = await Promise.race([
-          tool.execute(params),
-          this.timeout(tool.timeoutMs, name),
-        ]);
-
-        return {
-          success: true,
-          data: result,
-          executionMs: Date.now() - start,
-        };
-      } catch (error) {
-        lastError = error as Error;
-        const isRetryable = tool.retryPolicy.retryableErrors.some(
-          (code) => (error as any).code === code
-        );
-        if (!isRetryable || attempt === tool.retryPolicy.maxAttempts) break;
-        await this.sleep(tool.retryPolicy.backoffMs * attempt);
-      }
-    }
-
+  if (missingEvidence.length > 0) {
     return {
-      success: false,
-      error: {
-        code: (lastError as any)?.code ?? 'EXECUTION_FAILED',
-        message: lastError?.message ?? 'Unknown error',
-        recoverable: false,
-      },
-      executionMs: Date.now() - start,
+      passed: false,
+      score: 0.42,
+      reasons: [`핵심 근거 부족: ${missingEvidence.join(', ')}`],
+      requiresHumanReview: true,
     };
   }
 
-  getManifest(): Array<{ name: string; description: string; inputSchema: object }> {
-    return Array.from(this.tools.values()).map(({ name, description, inputSchema }) => ({
-      name, description, inputSchema,
-    }));
-  }
-
-  private validateTool(tool: MCPTool): void {
-    if (!tool.name || !tool.description) throw new Error('Tool name and description required');
-    if (!tool.inputSchema) throw new Error('Tool inputSchema required');
-    if (tool.timeoutMs <= 0 || tool.timeoutMs > 300000) {
-      throw new Error('Tool timeoutMs must be between 0 and 300000ms');
-    }
-  }
-
-  private timeout(ms: number, toolName: string): Promise<never> {
-    return new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Tool '${toolName}' timed out after ${ms}ms`)), ms)
-    );
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-}
-
-// 도구 등록 예시
-const registry = new MCPToolRegistry();
-
-registry.register({
-  name: 'filesystem-read',
-  description: 'Read contents of a file from the local filesystem',
-  tags: ['file', 'read', 'local'],
-  timeoutMs: 5000,
-  retryPolicy: { maxAttempts: 1, backoffMs: 0, retryableErrors: [] },
-  permissions: ['filesystem:read'],
-  inputSchema: {
-    type: 'object',
-    properties: { path: { type: 'string', description: 'Absolute file path' } },
-    required: ['path'],
-  },
-  async execute(params: any) {
-    const fs = await import('fs/promises');
-    return await fs.readFile(params.path, 'utf-8');
-  },
-});
-```
-
----
-
-## 4. Agentic Loop의 실행 엔진: 상태 기계로 보는 에이전트的一生
-
-### 상태 기계로서의 에이전트
-
-에이전트를 바라보는 가장 정확한 모델은 **상태 기계(Finite State Machine)**다. 각 상태에서 LLM이 다음 상태를 결정하고, 도구 실행이 상태 전이의 Trigger가 된다:
-
-```
-에이전트 상태 기계:
-─────────────────────────────────────────────────────────
-
-  ┌─────────┐
-  │ IDLE    │ ← 초기 상태, 사용자 입력 대기
-  └────┬────┘
-       │ user_input_received
-       ▼
-  ┌─────────┐
-  │PLANNING │ ← LLM: "이 과업을怎么做? 도구를 어떻게 조합?"
-  └────┬────┘
-       │ plan_approved (or auto_approved if budget < threshold)
-       ▼
-  ┌──────────┐
-  │EXECUTING │ ← 도구 실행 중 (동시성 관리 필요)
-  └────┬─────┘
-       │ tool_result_received
-       ▼
-  ┌──────────┐
-  │REASONING │ ← LLM: "결과를 분석하고 다음 조치 결정"
-  └────┬─────┘
-       │ has_more_steps = false
-       ▼
-  ┌─────────┐
-  │COMPLETE │ ← 사용자에게 결과 반환
-  └─────────┘
-       │
-       │ (도중 오류 또는 사용자 중단)
-       ▼
-  ┌─────────┐
-  │ABORTED  │ ← 정리 작업 (리소스 해제, 상태 저장)
-  └─────────┘
-
-─────────────────────────────────────────────────────────
-```
-
-```typescript
-// 상태 기계 기반 Agentic Loop Engine
-type AgentState = 'IDLE' | 'PLANNING' | 'EXECUTING' | 'REASONING' | 'COMPLETE' | 'ABORTED';
-
-interface AgentContext {
-  state: AgentState;
-  history: AgentTransition[];
-  currentPlan: ToolCall[];
-  executionResults: Map<string, MCPToolResult>;
-  abortController: AbortController;
-}
-
-class AgenticLoopEngine {
-  private state: AgentState = 'IDLE';
-  private context: AgentContext = {
-    state: 'IDLE',
-    history: [],
-    currentPlan: [],
-    executionResults: new Map(),
-    abortController: new AbortController(),
+  return {
+    passed: true,
+    score: 0.91,
+    reasons: ['필수 근거 확인 완료'],
+    requiresHumanReview: false,
   };
-
-  async run(input: string, agent: LLMModel, registry: MCPToolRegistry): Promise<string> {
-    this.transitionTo('PLANNING');
-    this.context.abortController = new AbortController();
-
-    try {
-      // Step 1: Planning — 모델에게 도구 사용 계획 요청
-      const plan = await this.createPlan(input, agent, registry);
-
-      // Step 2: Approval check — 민감도/비용에 따라 자동 또는 수동 승인
-      if (!this.shouldAutoApprove(plan)) {
-        // 사용자에게 승인 요청 (human-in-the-loop)
-        const approved = await this.requestApproval(plan);
-        if (!approved) return this.transitionTo('ABORTED').then(() => '작업이 사용자에 의해 취소되었습니다.');
-      }
-
-      // Step 3: Execution — 도구 실행 (병렬 또는 순차)
-      this.transitionTo('EXECUTING');
-      const results = await this.executePlan(plan, registry);
-
-      // Step 4: Reasoning — 결과 분석 및 응답 생성
-      this.transitionTo('REASONING');
-      const response = await this.generateResponse(input, results, agent);
-
-      this.transitionTo('COMPLETE');
-      return response;
-
-    } catch (error) {
-      if ((error as any).name === 'AbortError') {
-        this.transitionTo('ABORTED');
-        return '작업이 중단되었습니다.';
-      }
-      throw error;
-    }
-  }
-
-  private async createPlan(input: string, agent: LLMModel, registry: MCPToolRegistry) {
-    const manifest = registry.getManifest();
-    const prompt = `사용자 요청: "${input}"
-
-사용 가능한 도구:
-${manifest.map(t => `- ${t.name}: ${t.description}`).join('\n')}
-
-이 요청을 수행하기 위한 도구 호출 계획을 세우고, 각 도구의 필요한 파라미터를 지정하세요.` ;
-
-    const response = await agent.complete(prompt);
-    return this.parseToolCalls(response); // 모델 응답에서 tool calls 추출
-  }
-
-  private async executePlan(plan: ToolCall[], registry: MCPToolRegistry) {
-    const results = new Map<string, MCPToolResult>();
-
-    // 병렬 실행 가능한 도구 식별 (서로 의존성이 없는 경우)
-    const independentCalls = plan.filter(call => !call.dependsOn);
-    const dependentCalls = plan.filter(call => call.dependsOn);
-
-    // 1단계: 독립적 도구 병렬 실행
-    const parallelResults = await Promise.all(
-      independentCalls.map(call => registry.executeTool(call.name, call.params))
-    );
-    independentCalls.forEach((call, i) => results.set(call.id, parallelResults[i]));
-
-    // 2단계: 의존성 기반 순차 실행
-    for (const call of dependentCalls) {
-      const deps = call.dependsOn.map(id => results.get(id)!.data);
-      const mergedParams = { ...call.params, dependencies: deps };
-      results.set(call.id, await registry.executeTool(call.name, mergedParams));
-    }
-
-    return results;
-  }
-
-  private transitionTo(newState: AgentState): AgentState {
-    this.context.history.push({
-      from: this.state,
-      to: newState,
-      timestamp: new Date().toISOString(),
-    });
-    this.state = newState;
-    this.context.state = newState;
-    console.log(`[Agent] State: ${this.context.history.at(-1)?.from} → ${newState}`);
-    return newState;
-  }
-
-  private shouldAutoApprove(plan: ToolCall[]): boolean {
-    const totalCost = plan.reduce((sum, call) => sum + (call.estimatedCost ?? 0), 0);
-    const hasSensitiveOps = plan.some(call => ['delete', 'write', 'payment'].includes(call.category));
-    return totalCost < 0.01 && !hasSensitiveOps; // $0.01 미만이면서 민감 ops 없으면 자동 승인
-  }
-
-  private async requestApproval(plan: ToolCall[]): Promise<boolean> {
-    // 실제 구현에서는 UI를 통해 사용자에게 승인 요청
-    // 현재는 시뮬레이션으로 true 반환
-    return true;
-  }
 }
 ```
+
+이 코드는 단순해 보이지만 중요한 원칙을 담고 있다.
+
+- verifier는 `생각이 그럴듯한가`가 아니라 `근거가 충분한가`를 본다.
+- verification 실패는 곧바로 human review로 연결된다.
+- score는 편의 기능일 뿐, 최종 판정은 rules와 evidence completeness가 담당한다.
 
 ---
 
-## 5. Production 배포 시 반드시 점검해야 할 5가지
+## 5. Planner와 Runtime을 분리하지 않으면 생기는 문제
 
-MCP 런타임을 프로덕션에 배포할 때, 개발 환경에서는 잘 작동하던 시스템이 갑자기 문제가 생기는 지점들이 있다. 그중에서도 특히 치명적인 5가지를 정리한다.
+Agent를 처음 만들 때 흔히 하는 실수는 planner가 runtime 정책까지 동시에 쥐게 만드는 것이다. 예를 들어 model이 직접 이런 걸 결정하게 두는 식이다.
 
-### 1. 동시 실행으로 인한 Race Condition
+- 몇 번 재시도할지
+- timeout을 얼마나 줄지
+- approval 없이 진행할지
+- background task로 넘길지
 
-```typescript
-// ❌ 잘못된 구현: 동시 접근 시 race condition
-async function transferMoney(from: string, to: string, amount: number) {
-  const balance = await db.query(`SELECT balance FROM accounts WHERE id = '${from}'`);
-  // ← A 요청이 여기까지 읽는 순간, B 요청이 같은 잔액을 읽음
-  if (balance < amount) throw new Error('잔액 부족');
-  await db.query(`UPDATE accounts SET balance = balance - ${amount} WHERE id = '${from}'`);
-  await db.query(`UPDATE accounts SET balance = balance + ${amount} WHERE id = '${to}'`);
-}
+이 구조는 데모에서는 빨라 보인다. 하지만 운영에서는 재앙에 가깝다. 왜냐하면 실행 정책은 business policy와 security policy의 영역이지, 매번 model이 새로 추론할 영역이 아니기 때문이다.
 
-// ✅ 올바른 구현: 트랜잭션 +悲观锁
-async function transferMoneySafe(from: string, to: string, amount: number) {
-  return await db.transaction(async (tx) => {
-    const [balance] = await tx.query(
-      `SELECT balance FROM accounts WHERE id = ? FOR UPDATE`,
-      [from]
-    );
-    if (balance < amount) throw new Error('잔액 부족');
-    await tx.query(`UPDATE accounts SET balance = balance - ? WHERE id = ?`, [amount, from]);
-    await tx.query(`UPDATE accounts SET balance = balance + ? WHERE id = ?`, [amount, to]);
-  });
-}
+권장 구조는 다음과 같다.
+
+```text
+Planner
+  - 어떤 목표를 달성할지 계획
+  - 어떤 tool이 필요한지 제안
+
+Policy Engine
+  - 이 계획이 허용 범위 안인지 판단
+  - retry, timeout, approval 규칙 부여
+
+Runtime Orchestrator
+  - 실제 큐잉, 취소, 상태 저장, 재실행 수행
+
+Verifier
+  - 실행 근거와 결과의 적합성 검사
 ```
 
-### 2. 컨텍스트 윈도우 고갈 (Context Window Exhaustion)
+아래 예시는 planner의 자유도를 줄이고 runtime이 정책을 강제하는 형태다.
 
-```
-Context Budget 소모 시각화:
-─────────────────────────────────────────────────────────
-[4K]  시스템 프롬프트 + 도구 스키마
-[3K]  세션 기억 (hierarchical 요약 포함)
-[1K]  현재 사용자 입력
-[5K]  실행 결과 history (10개 도구 × 平均500토큰)
-─────────────────────────────────────────────────────────
-[13K] 이미 사용됨 / 128K 총 용량
+```ts
+type ToolCategory = 'read' | 'write' | 'external_send' | 'deploy';
 
-→ 나머지 115K 토큰 = LLM의 "생각 공간"
-   여기서 비용 관리와 요약 전략의 중요성
-─────────────────────────────────────────────────────────
-```
-
-### 3. Human-in-the-loop 누락으로 인한 자동화 리스크
-
-민감한 도구 호출(삭제, 결제, 외부 API 발송)을 `shouldAutoApprove` 없이 자동화하면, 의도치 않은 대규모 실행으로 이어질 수 있다. **승인 플래그와 실행 전 중단 capability는 필수**다.
-
-### 4. Observability 부재
-
-도구 실행을 모니터링하지 않으면 실패 원인 추적이 불가능하다. 최소한 다음은 측정해야 한다:
-
-```typescript
-// 필수 메트릭: 실행 시간, 성공률, 오류 유형별 분포
-interface ToolMetrics {
+interface PlannedToolCall {
   toolName: string;
-  totalCalls: number;
-  successCount: number;
-  failureCount: number;
-  avgLatencyMs: number;
-  errorBreakdown: Record<string, number>;
+  category: ToolCategory;
+  params: Record<string, unknown>;
+}
+
+interface ExecutionPolicy {
+  timeoutMs: number;
+  retryLimit: number;
+  requiresApproval: boolean;
+  queue: 'inline' | 'background';
+}
+
+export function resolvePolicy(call: PlannedToolCall): ExecutionPolicy {
+  switch (call.category) {
+    case 'read':
+      return {
+        timeoutMs: 10_000,
+        retryLimit: 1,
+        requiresApproval: false,
+        queue: 'inline',
+      };
+    case 'write':
+      return {
+        timeoutMs: 20_000,
+        retryLimit: 0,
+        requiresApproval: true,
+        queue: 'inline',
+      };
+    case 'external_send':
+      return {
+        timeoutMs: 15_000,
+        retryLimit: 0,
+        requiresApproval: true,
+        queue: 'background',
+      };
+    case 'deploy':
+      return {
+        timeoutMs: 120_000,
+        retryLimit: 0,
+        requiresApproval: true,
+        queue: 'background',
+      };
+  }
 }
 ```
 
-### 5. 보안: 권한 최소주의 (Principle of Least Privilege)
+이 구조의 장점은 분명하다.
 
-MCP 도구마다 필요한 권한을 명시적으로 선언하고, 런타임이 이를 enforcement해야 한다:
+- planner가 똑똑해도 policy를 우회할 수 없다.
+- runtime metrics를 category 기준으로 바로 집계할 수 있다.
+- review 기준이 코드로 남는다.
+- 운영자가 model behavior보다 policy file을 먼저 볼 수 있다.
 
-```typescript
-// 권한 검사 로직
-function checkPermission(tool: MCPTool, callerContext: SecurityContext): boolean {
-  const required = new Set(tool.permissions);
-  const granted = new Set(callerContext.permissions);
-  // 모든 필요 권한이 부여된 권한 집합에 포함되어야 통과
-  return [...required].every(p => granted.has(p));
-}
+실제로 production 운영은 `model tuning`보다 `policy clarity`에서 더 자주 개선된다.
+
+---
+
+## 6. Browser runtime과 local runtime을 같은 방식으로 다루면 안 된다
+
+2026년 Agent 흐름에서 browser runtime의 비중은 계속 커지고 있다. 하지만 browser tool을 local file tool과 같은 재시도 규칙으로 다루면 장애가 늘어난다. 실패 특성이 다르기 때문이다.
+
+- local runtime 실패: permission error, file not found, process exit code
+- browser runtime 실패: selector drift, auth expiry, timing race, modal interrupt
+
+즉, tool abstraction은 같아도 failure model은 다르다.
+
+그래서 runtime layer는 최소한 아래처럼 분리돼야 한다.
+
+```text
+Local Tool Adapter
+  - deterministic failure 비중이 높음
+  - 재현 가능성 높음
+  - retry보다 즉시 실패가 더 유익할 때 많음
+
+Browser Tool Adapter
+  - nondeterministic failure 비중이 높음
+  - DOM variation과 timing 영향 큼
+  - bounded retry와 fallback selector가 유효함
 ```
 
----
+실무 팁 하나를 덧붙이면, browser tool에서는 `정답 추론`보다 `증거 수집`을 우선시하는 편이 낫다. 예를 들면 다음 순서다.
 
-## 6. 2026년 에이전트 아키텍처의 핵심 교훈
+1. page state snapshot 저장
+2. 실패 selector 기록
+3. screenshot 또는 accessibility tree 저장
+4. 그 다음에만 fallback reasoning 수행
 
-2026년 4월 현재, 수백 개의 프로덕션 에이전트 시스템을 관찰하면서 발견한 핵심 원칙은 다음과 같다.
-
-**1. 모델은commodity, 실행 환경이competitive advantage다.**
-gpt-5와 claude-4의 차이가 5% 이내인 세상에서, 20% 성능차를 만드는 것은 런타임의 동시성 처리, 재시도 정책, 그리고 지연 시간 최적화다.
-
-**2. MCP는 시작일 뿐, 실행의 모든 것은 '설계'다.**
-MCP를 도입했다고해서 에이전트가 자동으로 잘 작동하지 않는다. 도구 등록, 권한 관리, 타임아웃, 폴백 전략, 모니터링 — 이 모든 것은 MCP 외부에서 설계해야 한다.
-
-**3. Browser-as-Runtime은 선택이 아니라 당위성이 되었다.**
-샌드박스 실행, UI 자동화, 인증 세션 관리 — 브라우저가 제공하는 속성들은 에이전트 개발에 필수적이며, 2026년 현재 이를 대체할 다른 런타임 환경의 속도、成本、보안 균형은 브라우저的对手이 없다.
-
-**4. Cooperative Routing 없이는 비용이 폭망한다.**
-모든 요청을 고성능 클라우드 모델에 보내면 비용이 1달 만에 10배 이상膨胀한다. Local/Lightweight 모델과 Cloud/High-performance 모델의 적절한 분배는 비용 관리의 핵심이다.
-
-**5. Observability 없는 에이전트는 블랙박스와 같다.**
-도구 실행 시간, 재시도 횟수, 오류율, 컨텍스트 토큰 소비량 — 이 메트릭을 수집하지 못하면 에이전트의 성능을 개선할 수 없다. **측정할 수 없는 것은 개선할 수 없다.**
+이 순서를 거꾸로 하면, evidence 없는 요약이 늘어난다.
 
 ---
 
-## 자가 검토: 이 글의 완성도를 스스로 평가하다
+## 7. Production 체크리스트
 
-글을 쓴 후 스스로 다음과 같은 점검을 거쳤다.
+실제 팀이 Agent runtime을 운영하기 전에 반드시 점검해야 할 항목을 짧게 정리한다.
 
-**1. 기술적 정확성:** MCP의 JSON-RPC 2.0 기반 인터페이스, 브라우저 WebContainer의 샌드박스 속성, Cooperative Routing의 분류 기준 — 모두 2026년 4월 기준으로 사실에 기반한다.
+### 실행 계약
 
-**2. 실용성:** Tool Registry 코드, Agentic Loop Engine, Race Condition 패치 — 모두 단독으로 프로덕션에 투입 가능한 수준의 완결된 코드다.
+- 모든 task에 `taskId`, `requestId`, `idempotencyKey`가 있는가
+- timeout과 retry budget이 정책으로 분리되어 있는가
+- cancellation이 실제 tool execution까지 전파되는가
+- partial failure 상태가 저장되는가
 
-**3. 아키텍처적 깊이:** "왜 브라우저인가", "왜 Cooperative Routing인가"를 단순 나열이 아니라 표와 함께 비교하여 설계 의사결정의 근거를 제시했다.
+### observability
 
-**4. 프로덕션 지향성:** Race condition, context exhaustion, observability 부재, security enforcement — 실제 프로덕션에서 발생하는 문제들을 사전에 경고하는 내용을 포함했다.
+- task 단위 상태 전이가 구조화 이벤트로 남는가
+- tool latency와 error code가 집계되는가
+- planner decision과 verifier decision이 구분되어 기록되는가
+- raw artifact 저장 정책과 digest 저장 정책이 나뉘어 있는가
 
-**5. 이전 글과의 연계:** 4월 13일의 Agent SLO 글, 4월 15일의 CAP 정리와 의도적으로 다른 스레드를 잇는다. 이 글에서 말하는 "Runtime 병목"이 궁극적으로는 분산 시스템의 Consistency/Latency 트레이드오프(CAP 정리)와 연결됨을 암시적으로 전달했다.
+### verification
+
+- side effect 직전 gate가 존재하는가
+- evidence 부족 시 human review로 빠지는가
+- verifier score만으로 commit하지 않는가
+- post-condition check가 실제 external state를 확인하는가
+
+### security
+
+- tool category별 최소 권한 정책이 있는가
+- external send, deploy, delete는 무조건 approval 대상인가
+- audit log가 수정 불가능한 저장소로 복제되는가
+- prompt와 artifact에 민감 정보 마스킹이 적용되는가
+
+### 운영
+
+- stuck task를 감지하는 watchdog가 있는가
+- queue backlog가 일정 임계치를 넘으면 backpressure가 작동하는가
+- model outage 시 degraded mode가 존재하는가
+- workflow별 SLO를 정의했는가
+
+---
+
+## 8. 어떤 지표를 봐야 운영이 좋아지는가
+
+Agent 시스템에서 자주 빠지는 함정이 `정확도` 하나만 보는 것이다. 하지만 운영 지표는 더 입체적이어야 한다.
+
+내가 추천하는 기본 지표는 아래와 같다.
+
+- **Task Success Rate**: 최종 목표 달성 비율
+- **Verification Pass Rate**: verifier를 통과한 비율
+- **Time to Useful Action**: 첫 유효 작업까지 걸린 시간
+- **Human Intervention Rate**: 사람 개입 비율
+- **Replay Safety Rate**: 같은 task 재실행 시 side effect 없이 복구되는 비율
+- **Evidence Completeness Score**: 판단에 필요한 근거 충족 비율
+
+이 중 특히 중요한 건 `Verification Pass Rate`와 `Evidence Completeness Score`다. 왜냐하면 Agent 시스템의 실패는 종종 `틀린 답`보다 `근거 없는 자신감`으로 나타나기 때문이다.
+
+---
+
+## 결론: 다음 경쟁력은 더 영리한 model이 아니라 더 설명 가능한 실행이다
+
+2026년의 Agent 시스템은 분명 더 강력해졌다. 하지만 그만큼 더 위험해졌다. 이유는 단순하다. 이제 Agent는 읽고 요약하는 수준을 넘어, 실제로 실행하고 바꾸고 보낸다.
+
+그래서 다음 단계의 핵심 질문은 이것이다.
+
+- 이 agent는 무엇을 실행했는가
+- 왜 그렇게 실행했는가
+- 어떤 근거로 통과되었는가
+- 실패했다면 어느 단계에서 어긋났는가
+- 다시 실행해도 안전한가
+
+이 질문에 답할 수 없으면, tool이 백 개 있어도 production 신뢰도는 올라가지 않는다.
+
+MCP는 매우 중요한 기반이다. 하지만 실무 팀이 진짜로 만들어야 하는 것은 그 위의 운영 계층이다.
+
+- async execution contract
+- structured runtime events
+- verification gate
+- policy enforced orchestration
+- evidence first debugging
+
+결국 경쟁력은 `더 많은 연결`이 아니라 `더 설명 가능한 실행`에서 나온다.
+
+Agent 시대의 운영은 model demo가 아니라 distributed systems engineering에 더 가깝다. 그리고 바로 그 지점에서, 좋은 runtime 설계가 팀의 실질적 차이를 만든다.
