@@ -66,7 +66,7 @@ function sleep(ms) {
 }
 
 export async function runGitFetchWithRetry({
-  attempts = 3,
+  attempts = 6,
   delayMs = 2000,
   runCommand: execute = runCommand,
   log = () => {},

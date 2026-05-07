@@ -48,4 +48,20 @@ describe("automation guard", () => {
     expect(runCommand).toHaveBeenCalledTimes(2);
     expect(runCommand).toHaveBeenNthCalledWith(1, "git", ["fetch", "origin"]);
   });
+
+  it("uses a longer default retry budget for transient network failures", async () => {
+    const runCommand = vi.fn().mockResolvedValue({
+      status: 128,
+      stderr: "fatal: Could not resolve host: github.com",
+    });
+
+    await expect(
+      runGitFetchWithRetry({
+        delayMs: 0,
+        runCommand,
+      })
+    ).rejects.toThrow("git fetch origin failed after 6 attempt(s)");
+
+    expect(runCommand).toHaveBeenCalledTimes(6);
+  });
 });
