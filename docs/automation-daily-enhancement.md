@@ -15,8 +15,8 @@ The guard preserves the repository policy:
 
 - Stop when the worktree already has uncommitted changes.
 - Fetch `origin/main` before working.
-- Retry transient `git fetch origin` network failures up to 6 attempts before
-  stopping.
+- Retry transient `git fetch origin` network failures up to 30 attempts before
+  stopping, with a 10 second delay between attempts.
 - Fast-forward local `main` only when `origin/main` is a direct descendant.
 - Stop on branch divergence, auth failures, or unknown fetch failures.
 
