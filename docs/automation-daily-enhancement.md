@@ -17,6 +17,8 @@ The guard preserves the repository policy:
 - Fetch `origin/main` before working.
 - Retry transient `git fetch origin` network failures up to 30 attempts before
   stopping, with a 10 second delay between attempts.
+- Classify DNS resolution failures separately and print an actionable hint to
+  check runner DNS/network access before rerunning automation.
 - Fast-forward local `main` only when `origin/main` is a direct descendant.
 - Stop on branch divergence, auth failures, or unknown fetch failures.
 

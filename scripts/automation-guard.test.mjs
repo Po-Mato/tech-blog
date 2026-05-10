@@ -13,8 +13,25 @@ describe("automation guard", () => {
 
     expect(failure).toEqual({
       retryable: true,
-      reason: "network",
+      reason: "dns",
     });
+  });
+
+  it("reports an actionable hint after repeated DNS fetch failures", async () => {
+    const runCommand = vi.fn().mockResolvedValue({
+      status: 128,
+      stderr: "fatal: Could not resolve host: github.com",
+    });
+
+    await expect(
+      runGitFetchWithRetry({
+        attempts: 2,
+        delayMs: 0,
+        runCommand,
+      })
+    ).rejects.toThrow(
+      "DNS resolution failed for github.com; check runner DNS/network access before rerunning automation."
+    );
   });
 
   it("does not retry authentication fetch failures", () => {

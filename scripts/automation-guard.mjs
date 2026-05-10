@@ -3,9 +3,12 @@
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-const transientFetchPatterns = [
+const dnsFetchPatterns = [
   /could not resolve host/i,
   /temporary failure in name resolution/i,
+];
+
+const transientFetchPatterns = [
   /failed to connect/i,
   /connection timed out/i,
   /operation timed out/i,
@@ -26,6 +29,10 @@ const authFailurePatterns = [
 export function classifyGitFetchFailure(message = "") {
   if (authFailurePatterns.some((pattern) => pattern.test(message))) {
     return { retryable: false, reason: "auth" };
+  }
+
+  if (dnsFetchPatterns.some((pattern) => pattern.test(message))) {
+    return { retryable: true, reason: "dns" };
   }
 
   if (transientFetchPatterns.some((pattern) => pattern.test(message))) {
@@ -65,6 +72,14 @@ function sleep(ms) {
   });
 }
 
+function hintForFetchFailure(classification) {
+  if (classification?.reason === "dns") {
+    return "DNS resolution failed for github.com; check runner DNS/network access before rerunning automation.";
+  }
+
+  return "";
+}
+
 export async function runGitFetchWithRetry({
   attempts = 30,
   delayMs = 10000,
@@ -72,6 +87,7 @@ export async function runGitFetchWithRetry({
   log = () => {},
 } = {}) {
   let lastResult;
+  let lastClassification;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     const result = await execute("git", ["fetch", "origin"]);
@@ -82,6 +98,7 @@ export async function runGitFetchWithRetry({
     }
 
     const classification = classifyGitFetchFailure(result.stderr);
+    lastClassification = classification;
     const canRetry = classification.retryable && attempt < attempts;
 
     log(
@@ -95,8 +112,15 @@ export async function runGitFetchWithRetry({
     await sleep(delayMs);
   }
 
+  const hint = hintForFetchFailure(lastClassification);
   const error = new Error(
-    `git fetch origin failed after ${attempts} attempt(s): ${lastResult?.stderr ?? ""}`.trim()
+    [
+      `git fetch origin failed after ${attempts} attempt(s): ${lastResult?.stderr ?? ""}`,
+      hint,
+    ]
+      .filter(Boolean)
+      .join("\n")
+      .trim()
   );
   error.result = lastResult;
   throw error;
