@@ -1,11 +1,108 @@
 {
   "date": "2026-05-29",
-  "type": "phaser",
-  "template": "dodger",
-  "title": "Daily Dodger — SPIRAL",
-  "description": "탄막을 피하고 오브를 먹어서 점수를 올려봐. 5 스테이지 생존하면 클리어! (매일 시드/스테이지 팩 변경)",
-  "seed": 20260529,
-  "stagePack": "spiral",
-  "difficulty": 3,
-  "theme": "neon"
+  "type": "developer-quiz",
+  "difficulty": "hard",
+  "topic": "Agent Protocol Design (MCP + A2A)",
+  "questions": [
+    {
+      "id": "q1",
+      "category": "MCP Architecture",
+      "question": "MCP에서 Server가 Client에게 제공하는 Tool 목록을 요청하는 RPC 메서드의 이름은 무엇인가요?",
+      "options": [
+        "tools/list",
+        "tools/discover",
+        "tools/fetch",
+        "tools/catalog"
+      ],
+      "correctIndex": 0,
+      "explanation": "MCP 프로토콜 스펙에 따르면, Tool 목록 조회는 'tools/list' RPC를 통해 이루어집니다. 'tools/call'로 특정 Tool을 실행합니다."
+    },
+    {
+      "id": "q2",
+      "category": "A2A Protocol",
+      "question": "A2A(Agent-to-Agent) Protocol에서 에이전트의 기능, 인증 방식, 통신 방식을 정의하는 메타데이터 문서는 무엇인가요?",
+      "options": [
+        "Agent Manifest",
+        "Agent Profile",
+        "AgentCard",
+        "Agent Spec"
+      ],
+      "correctIndex": 2,
+      "explanation": "A2A는 AgentCard(/.well-known/agent.json)를 통해 에이전트의 skills, authentication schemes, rate limits 등을 동적으로 발견합니다. 마치 OpenAPI Spec이 REST API를 정의하는 방식과 유사합니다."
+    },
+    {
+      "id": "q3",
+      "category": "Protocol Comparison",
+      "question": "MCP와 A2A의 가장 근본적인 설계 차이는 무엇인가요?",
+      "options": [
+        "MCP는 gRPC를, A2A는 HTTP/2를 사용한다",
+        "MCP는 Tool 호출(RPC) 중심, A2A는 Task 위임(Stateful) 중심",
+        "MCP는 Google이, A2A는 Anthropic이 개발했다",
+        "MCP는 JSON만, A2A는 Protocol Buffers를 사용한다"
+      ],
+      "correctIndex": 1,
+      "explanation": "MCP는 Agent ↔ Tool 간의 stateless RPC(요청-응답) 중심인 반면, A2A는 Agent ↔ Agent 간의 stateful Task 위임을 핵심으로 합니다. A2A의 Task는 네트워크 연결보다 오래 살 수 있으며, SSE를 통해 진행 상황을 스트리밍합니다."
+    },
+    {
+      "id": "q4",
+      "category": "A2A Implementation",
+      "question": "다음 중 A2A Task의 수명 주기 상태가 아닌 것은?",
+      "options": [
+        "submitted",
+        "working",
+        "pending_approval",
+        "completed"
+      ],
+      "correctIndex": 2,
+      "explanation": "A2A v1.0 스펙에서 Task의 표준 상태는 submitted, working, completed, failed, canceled입니다. 'pending_approval'은 ADK 레벨의 Human-in-the-Loop 패턴이지 A2A 프로토콜 자체의 Task 상태는 아닙니다."
+    },
+    {
+      "id": "q5",
+      "category": "Architecture Design",
+      "question": "2026년 표준 엔터프라이즈 AI 에이전트 아키텍처의 3계층을 올바르게 나열한 것은?",
+      "options": [
+        "Tool Layer(MCP) → Agent Layer(A2A) → Orchestrator Layer(ADK)",
+        "Agent Layer(A2A) → Tool Layer(MCP) → Gateway Layer(ADK)",
+        "Model Layer(LLM) → Tool Layer(MCP) → Agent Layer(A2A)",
+        "Orchestrator Layer(ADK) → Agent Layer(A2A) → Tool Layer(MCP)"
+      ],
+      "correctIndex": 0,
+      "explanation": "표준 3계층은 Tool Layer(MCP, 하부 인프라) → Agent Layer(A2A, 도메인 전문성) → Orchestrator Layer(ADK, 사용자 의도/계획/전역 메모리) 순입니다. 각 계층은 명확히 분리되어야 하며, 이를 위반하면 '숨은 에이전트(Hidden Agent)' 문제가 발생합니다."
+    },
+    {
+      "id": "q6",
+      "category": "Event Compaction",
+      "question": "ADK 1.0의 Event Compaction 기능이 해결하는 핵심 문제는 무엇인가요?",
+      "options": [
+        "네트워크 지연 시간 단축",
+        "에이전트 간 통신 암호화",
+        "멀티 턴 대화에서의 컨텍스트 폭발(Context Explosion)",
+        "LLM 추론 품질 저하"
+      ],
+      "correctIndex": 2,
+      "explanation": "Event Compaction은 여러 A2A Task가 누적되면서 발생하는 컨텍스트 폭발 문제를 해결합니다. 오래된 이벤트를 요약(summarization)하고, pinKeys로 중요한 데이터는 보호하며, 프로덕션에서 토큰 사용량 38% 감소와 지연 시간 18% 개선이 확인되었습니다."
+    },
+    {
+      "id": "q7",
+      "category": "Protocol Design",
+      "question": "A2A 프로토콜이 MCP와 달리 도입한 일급 추상화(first-class abstraction)는 무엇인가요?",
+      "options": [
+        "Tool",
+        "Resource",
+        "Task",
+        "Prompt"
+      ],
+      "correctIndex": 2,
+      "explanation": "MCP가 Tool을 일급 객체로 다루는 반면, A2A는 Task를 일급 추상화로 도입합니다. 각 Task는 고유 ID를 가지며, submitted → working → completed의 명시적 수명 주기를 통해 long-running LLM 작업을 안정적으로 관리합니다."
+    }
+  ],
+  "theme": {
+    "title": "🤖 Agent Protocol Design Mastery",
+    "subtitle": "MCP & A2A Architecture Challenge",
+    "color": "#00BFFF",
+    "icon": "🔌",
+    "passScore": 5,
+    "perfectMessage": "Agent Protocol 아키텍트 수준입니다! MCP와 A2A의 설계 철학을 완전히 이해하고 계시네요.",
+    "failMessage": "프로토콜 간 미묘한 차이를 더 깊이 파고들어 보세요. AgentCard와 Task 모델이 핵심입니다."
+  }
 }
