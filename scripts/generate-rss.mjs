@@ -1,11 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
+
+import matter from "gray-matter";
 
 const SITE_URL = "https://po-mato.github.io";
 const OUT_DIR = path.join(process.cwd(), "out");
 const POSTS_DIR = path.join(process.cwd(), "content", "posts");
 
-function escapeXml(str) {
+export function escapeXml(str) {
   return String(str)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -14,53 +17,51 @@ function escapeXml(str) {
     .replaceAll("'", "&apos;");
 }
 
-function parseFrontmatter(raw) {
-  // Minimal frontmatter parse: rely on existing gray-matter output in app.
-  // Here we keep it simple to avoid extra deps.
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n/);
-  if (!match) return { data: {}, content: raw };
-
-  const fm = match[1];
-  const content = raw.slice(match[0].length);
-  const data = {};
-
-  for (const line of fm.split("\n")) {
-    const idx = line.indexOf(":");
-    if (idx === -1) continue;
-    const key = line.slice(0, idx).trim();
-    const value = line.slice(idx + 1).trim();
-    data[key] = value.replace(/^"|"$/g, "");
-  }
-
-  return { data, content };
+function frontmatterString(value, fallback = "") {
+  if (value instanceof Date) return value.toISOString();
+  if (value === undefined || value === null) return fallback;
+  return String(value);
 }
 
-const files = (await fs.readdir(POSTS_DIR)).filter((f) => /\.(md|mdx)$/i.test(f));
+export function parsePostItem(filename, raw) {
+  const slug = filename.replace(/\.(md|mdx)$/i, "");
+  const { data } = matter(raw);
 
-const items = [];
-for (const f of files) {
-  const slug = f.replace(/\.(md|mdx)$/i, "");
-  const raw = await fs.readFile(path.join(POSTS_DIR, f), "utf8");
-  const { data } = parseFrontmatter(raw);
-
-  const title = data.title || slug;
-  const date = data.date || new Date().toISOString();
-  const description = data.description || "";
+  const title = frontmatterString(data.title, slug);
+  const date = frontmatterString(data.date, new Date().toISOString());
+  const description = frontmatterString(data.description);
   const link = `${SITE_URL}/posts/${slug}/`;
 
-  items.push({ title, date, description, link, slug });
+  return {
+    title,
+    date,
+    description,
+    link,
+    slug,
+  };
 }
 
-items.sort((a, b) => (a.date < b.date ? 1 : -1));
+export async function readPostItems(postsDir = POSTS_DIR) {
+  const files = (await fs.readdir(postsDir)).filter((f) => /\.(md|mdx)$/i.test(f));
+  const items = [];
 
-const rss = `<?xml version="1.0" encoding="UTF-8"?>
+  for (const f of files) {
+    const raw = await fs.readFile(path.join(postsDir, f), "utf8");
+    items.push(parsePostItem(f, raw));
+  }
+
+  return items.sort((a, b) => (a.date < b.date ? 1 : -1));
+}
+
+export function buildRss(items, { lastBuildDate = new Date() } = {}) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
     <title>${escapeXml("Mato Po Tech Blog")}</title>
     <link>${SITE_URL}/</link>
     <description>${escapeXml("개발하면서 배운 것과 삽질 로그를 기록합니다.")}</description>
     <language>ko</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <lastBuildDate>${lastBuildDate.toUTCString()}</lastBuildDate>
 ${items
   .map(
     (it) => `    <item>
@@ -75,7 +76,17 @@ ${items
   </channel>
 </rss>
 `;
+}
 
-await fs.mkdir(OUT_DIR, { recursive: true });
-await fs.writeFile(path.join(OUT_DIR, "rss.xml"), rss, "utf8");
-console.log("Wrote out/rss.xml");
+export async function generateRss({ postsDir = POSTS_DIR, outDir = OUT_DIR } = {}) {
+  const items = await readPostItems(postsDir);
+  const rss = buildRss(items);
+
+  await fs.mkdir(outDir, { recursive: true });
+  await fs.writeFile(path.join(outDir, "rss.xml"), rss, "utf8");
+  console.log("Wrote out/rss.xml");
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await generateRss();
+}

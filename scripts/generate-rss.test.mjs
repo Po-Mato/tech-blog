@@ -1,0 +1,35 @@
+import { describe, expect, it } from "vitest";
+
+import { buildRss, parsePostItem } from "./generate-rss.mjs";
+
+describe("generate rss", () => {
+  it("parses folded YAML frontmatter descriptions", () => {
+    const item = parsePostItem(
+      "rss-frontmatter.mdx",
+      `---
+title: "RSS: 안정성 개선"
+date: 2026-06-11
+description: >
+  첫 줄: YAML 접힘
+  둘째 줄 & 검색
+---
+# 본문
+`
+    );
+
+    expect(item).toMatchObject({
+      slug: "rss-frontmatter",
+      title: "RSS: 안정성 개선",
+      date: "2026-06-11T00:00:00.000Z",
+    });
+    expect(item.description).toContain("첫 줄: YAML 접힘 둘째 줄 & 검색");
+
+    const rss = buildRss([item], {
+      lastBuildDate: new Date("2026-06-11T00:00:00.000Z"),
+    });
+
+    expect(rss).toContain("<title>RSS: 안정성 개선</title>");
+    expect(rss).toContain("첫 줄: YAML 접힘 둘째 줄 &amp; 검색");
+    expect(rss).not.toContain("<description>&gt;</description>");
+  });
+});
