@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 import matter from "gray-matter";
 
@@ -32,7 +33,13 @@ function stripMarkdown(md) {
   );
 }
 
-async function readDocsFromDir(dir, { type }) {
+function frontmatterString(value, fallback = "") {
+  if (value instanceof Date) return value.toISOString();
+  if (value === undefined || value === null) return fallback;
+  return String(value);
+}
+
+export async function readDocsFromDir(dir, { type }) {
   let files = [];
   try {
     files = (await fs.readdir(dir)).filter((f) => /\.(md|mdx)$/i.test(f));
@@ -48,9 +55,9 @@ async function readDocsFromDir(dir, { type }) {
     const parsed = matter(raw);
 
     const slug = String(parsed.data.slug || fallbackSlug);
-    const title = String(parsed.data.title || slug);
-    const description = parsed.data.description ? String(parsed.data.description) : "";
-    const date = parsed.data.date ? String(parsed.data.date) : "";
+    const title = frontmatterString(parsed.data.title, slug);
+    const description = frontmatterString(parsed.data.description);
+    const date = frontmatterString(parsed.data.date);
 
     // posts use tags; portfolio uses stack (but we index both into tags)
     const tags = Array.isArray(parsed.data.tags)
@@ -76,14 +83,24 @@ async function readDocsFromDir(dir, { type }) {
   return out;
 }
 
-const docs = [
-  ...(await readDocsFromDir(POSTS_DIR, { type: "post" })),
-  ...(await readDocsFromDir(PORTFOLIO_DIR, { type: "portfolio" })),
-];
+export async function generateSearchIndex({
+  postsDir = POSTS_DIR,
+  portfolioDir = PORTFOLIO_DIR,
+  outFile = OUT_FILE,
+} = {}) {
+  const docs = [
+    ...(await readDocsFromDir(postsDir, { type: "post" })),
+    ...(await readDocsFromDir(portfolioDir, { type: "portfolio" })),
+  ];
 
-// latest first (date string sort)
-docs.sort((a, b) => (a.date < b.date ? 1 : -1));
+  // latest first (date string sort)
+  docs.sort((a, b) => (a.date < b.date ? 1 : -1));
 
-await fs.mkdir(path.dirname(OUT_FILE), { recursive: true });
-await fs.writeFile(OUT_FILE, JSON.stringify({ version: 1, docs }, null, 2), "utf8");
-console.log(`Wrote ${OUT_FILE} (${docs.length} docs)`);
+  await fs.mkdir(path.dirname(outFile), { recursive: true });
+  await fs.writeFile(outFile, JSON.stringify({ version: 1, docs }, null, 2), "utf8");
+  console.log(`Wrote ${outFile} (${docs.length} docs)`);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  await generateSearchIndex();
+}
