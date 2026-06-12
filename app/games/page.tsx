@@ -1,8 +1,25 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { getGameDates } from "../../src/lib/games";
+import { site } from "../../src/lib/site";
 
 export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  title: "데일리 미니게임",
+  description: "매일 트렌드 기반으로 가볍게 즐기는 Mato Po Tech Blog 미니게임을 모아봅니다.",
+  alternates: {
+    canonical: "/games/",
+  },
+  openGraph: {
+    type: "website",
+    url: `${site.url}/games/`,
+    title: `데일리 미니게임 | ${site.title}`,
+    description: "매일 트렌드 기반으로 가볍게 즐기는 Mato Po Tech Blog 미니게임을 모아봅니다.",
+    images: [{ url: site.ogImage }],
+  },
+};
 
 export default async function GamesPage() {
   const dates = await getGameDates();

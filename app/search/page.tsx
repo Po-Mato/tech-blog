@@ -1,8 +1,25 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 
 import SearchClient from "./SearchClient";
+import { site } from "../../src/lib/site";
 
 export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  title: "검색",
+  description: "Mato Po Tech Blog의 글과 포트폴리오를 통합 검색합니다.",
+  alternates: {
+    canonical: "/search/",
+  },
+  openGraph: {
+    type: "website",
+    url: `${site.url}/search/`,
+    title: `검색 | ${site.title}`,
+    description: "Mato Po Tech Blog의 글과 포트폴리오를 통합 검색합니다.",
+    images: [{ url: site.ogImage }],
+  },
+};
 
 export default function SearchPage() {
   return (

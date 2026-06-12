@@ -1,8 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { getAllPosts } from "../../../src/lib/posts";
 import { getAllTags, slugToTag, tagToSlug } from "../../../src/lib/tags";
+import { site } from "../../../src/lib/site";
 
 export const dynamic = "force-static";
 export const dynamicParams = false;
@@ -10,6 +12,34 @@ export const dynamicParams = false;
 export async function generateStaticParams() {
   const tags = await getAllTags();
   return tags.map(({ tag }) => ({ tag: tagToSlug(tag) }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tag: string }>;
+}): Promise<Metadata> {
+  const { tag: tagSlug } = await params;
+  const tag = slugToTag(tagSlug);
+  if (!tag) return {};
+
+  const title = `#${tag}`;
+  const description = `${tag} 태그가 달린 Mato Po Tech Blog 글을 모아봅니다.`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: `/tags/${tagSlug}/`,
+    },
+    openGraph: {
+      type: "website",
+      url: `${site.url}/tags/${tagSlug}/`,
+      title: `${title} | ${site.title}`,
+      description,
+      images: [{ url: site.ogImage }],
+    },
+  };
 }
 
 export default async function TagPage({

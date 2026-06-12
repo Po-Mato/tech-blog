@@ -1,8 +1,25 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { getAllPortfolio } from "../../src/lib/portfolio";
+import { site } from "../../src/lib/site";
 
 export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  title: "포트폴리오",
+  description: "Mato Po Tech Blog의 구현 프로젝트와 기술 실증 기록을 모아봅니다.",
+  alternates: {
+    canonical: "/portfolio/",
+  },
+  openGraph: {
+    type: "website",
+    url: `${site.url}/portfolio/`,
+    title: `포트폴리오 | ${site.title}`,
+    description: "Mato Po Tech Blog의 구현 프로젝트와 기술 실증 기록을 모아봅니다.",
+    images: [{ url: site.ogImage }],
+  },
+};
 
 export default async function PortfolioPage() {
   const items = await getAllPortfolio();

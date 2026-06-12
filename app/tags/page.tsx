@@ -1,8 +1,25 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { getAllTags, tagToSlug } from "../../src/lib/tags";
+import { site } from "../../src/lib/site";
 
 export const dynamic = "force-static";
+
+export const metadata: Metadata = {
+  title: "태그 아카이브",
+  description: "Mato Po Tech Blog의 글을 태그별로 탐색합니다.",
+  alternates: {
+    canonical: "/tags/",
+  },
+  openGraph: {
+    type: "website",
+    url: `${site.url}/tags/`,
+    title: `태그 아카이브 | ${site.title}`,
+    description: "Mato Po Tech Blog의 글을 태그별로 탐색합니다.",
+    images: [{ url: site.ogImage }],
+  },
+};
 
 export default async function TagsPage() {
   const tags = await getAllTags();
