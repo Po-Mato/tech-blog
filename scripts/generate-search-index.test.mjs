@@ -30,4 +30,33 @@ tags:
       date: "2026-06-12T00:00:00.000Z",
     });
   });
+
+  it("excludes draft documents from the public search index", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "search-index-"));
+    await fs.writeFile(
+      path.join(dir, "published.md"),
+      `---
+title: Published
+date: 2026-06-13
+---
+# Visible
+`,
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(dir, "draft.md"),
+      `---
+title: Draft
+date: 2026-06-14
+draft: true
+---
+# Hidden
+`,
+      "utf8",
+    );
+
+    const docs = await readDocsFromDir(dir, { type: "post" });
+
+    expect(docs.map((doc) => doc.slug)).toEqual(["published"]);
+  });
 });

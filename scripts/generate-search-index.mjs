@@ -54,6 +54,10 @@ export async function readDocsFromDir(dir, { type }) {
     const raw = await fs.readFile(path.join(dir, f), "utf8");
     const parsed = matter(raw);
 
+    if (parsed.data.draft === true) {
+      continue;
+    }
+
     const slug = String(parsed.data.slug || fallbackSlug);
     const title = frontmatterString(parsed.data.title, slug);
     const description = frontmatterString(parsed.data.description);
