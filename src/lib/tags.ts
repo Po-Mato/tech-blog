@@ -9,6 +9,10 @@ export function normalizeTag(tag: string): string {
   return tag.trim();
 }
 
+export function tagMatches(rawTag: string, targetTag: string): boolean {
+  return normalizeTag(rawTag) === normalizeTag(targetTag);
+}
+
 export async function getAllTags(): Promise<TagCount[]> {
   const posts = await getAllPosts();
   const map = new Map<string, number>();

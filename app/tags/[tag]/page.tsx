@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { getAllPosts } from "../../../src/lib/posts";
-import { getAllTags, slugToTag, tagToSlug } from "../../../src/lib/tags";
+import { getAllTags, slugToTag, tagMatches, tagToSlug } from "../../../src/lib/tags";
 import { site } from "../../../src/lib/site";
 
 export const dynamic = "force-static";
@@ -49,7 +49,9 @@ export default async function TagPage({
 }) {
   const { tag: tagSlug } = await params;
   const tag = slugToTag(tagSlug);
-  const posts = (await getAllPosts()).filter((p) => (p.tags ?? []).includes(tag));
+  const posts = (await getAllPosts()).filter((p) =>
+    (p.tags ?? []).some((postTag) => tagMatches(postTag, tag))
+  );
 
   if (!tag) notFound();
 

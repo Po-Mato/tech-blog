@@ -5,7 +5,7 @@ vi.mock("./posts", () => ({
 }));
 
 import { getAllPosts, type PostMeta } from "./posts";
-import { getAllTags, normalizeTag, slugToTag, tagToSlug } from "./tags";
+import { getAllTags, normalizeTag, slugToTag, tagMatches, tagToSlug } from "./tags";
 
 const mockedGetAllPosts = vi.mocked(getAllPosts);
 
@@ -16,6 +16,11 @@ describe("tags utilities", () => {
 
   it("normalizeTag trims whitespace", () => {
     expect(normalizeTag("  nextjs  ")).toBe("nextjs");
+  });
+
+  it("tagMatches compares normalized tag names", () => {
+    expect(tagMatches(" nextjs ", "nextjs")).toBe(true);
+    expect(tagMatches("react", "nextjs")).toBe(false);
   });
 
   it("tag slug conversion is reversible for unicode and spaces", () => {
