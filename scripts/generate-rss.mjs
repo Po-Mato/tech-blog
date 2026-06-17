@@ -55,12 +55,13 @@ export async function readPostItems(postsDir = POSTS_DIR) {
 
 export function buildRss(items, { lastBuildDate = new Date() } = {}) {
   return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml("Mato Po Tech Blog")}</title>
     <link>${SITE_URL}/</link>
     <description>${escapeXml("개발하면서 배운 것과 삽질 로그를 기록합니다.")}</description>
     <language>ko</language>
+    <atom:link href="${SITE_URL}/rss.xml" rel="self" type="application/rss+xml" />
     <lastBuildDate>${lastBuildDate.toUTCString()}</lastBuildDate>
 ${items
   .map(

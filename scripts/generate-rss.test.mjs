@@ -30,6 +30,8 @@ description: >
 
     expect(rss).toContain("<title>RSS: 안정성 개선</title>");
     expect(rss).toContain("첫 줄: YAML 접힘 둘째 줄 &amp; 검색");
+    expect(rss).toContain('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">');
+    expect(rss).toContain('<atom:link href="https://po-mato.github.io/rss.xml" rel="self" type="application/rss+xml" />');
     expect(rss).not.toContain("<description>&gt;</description>");
   });
 });
