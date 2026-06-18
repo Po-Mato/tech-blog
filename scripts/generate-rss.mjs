@@ -38,6 +38,7 @@ export function parsePostItem(filename, raw) {
     description,
     link,
     slug,
+    draft: data.draft === true,
   };
 }
 
@@ -47,7 +48,8 @@ export async function readPostItems(postsDir = POSTS_DIR) {
 
   for (const f of files) {
     const raw = await fs.readFile(path.join(postsDir, f), "utf8");
-    items.push(parsePostItem(f, raw));
+    const item = parsePostItem(f, raw);
+    if (!item.draft) items.push(item);
   }
 
   return items.sort((a, b) => (a.date < b.date ? 1 : -1));

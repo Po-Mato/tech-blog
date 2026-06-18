@@ -1,6 +1,10 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
-import { buildRss, parsePostItem } from "./generate-rss.mjs";
+import { buildRss, parsePostItem, readPostItems } from "./generate-rss.mjs";
 
 describe("generate rss", () => {
   it("parses folded YAML frontmatter descriptions", () => {
@@ -33,5 +37,34 @@ description: >
     expect(rss).toContain('<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">');
     expect(rss).toContain('<atom:link href="https://po-mato.github.io/rss.xml" rel="self" type="application/rss+xml" />');
     expect(rss).not.toContain("<description>&gt;</description>");
+  });
+
+  it("excludes draft posts from the public feed", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "rss-posts-"));
+    await fs.writeFile(
+      path.join(dir, "published.md"),
+      `---
+title: Published
+date: 2026-06-18
+---
+# Visible
+`,
+      "utf8",
+    );
+    await fs.writeFile(
+      path.join(dir, "draft.md"),
+      `---
+title: Draft
+date: 2026-06-19
+draft: true
+---
+# Hidden
+`,
+      "utf8",
+    );
+
+    const items = await readPostItems(dir);
+
+    expect(items.map((item) => item.slug)).toEqual(["published"]);
   });
 });
