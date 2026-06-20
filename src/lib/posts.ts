@@ -37,9 +37,17 @@ async function markdownToHtml(markdown: string): Promise<string> {
 
 export async function getPostSlugs(): Promise<string[]> {
   const files = await fs.readdir(postsDirectory);
-  return files
-    .filter((f) => f.endsWith(".md") || f.endsWith(".mdx"))
-    .map((f) => f.replace(/\.(md|mdx)$/i, ""));
+  const contentFiles = files.filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
+  const slugs = await Promise.all(
+    contentFiles.map(async (file) => {
+      const raw = await fs.readFile(path.join(postsDirectory, file), "utf8");
+      const { data } = matter(raw);
+
+      return data.draft === true ? null : file.replace(/\.(md|mdx)$/i, "");
+    }),
+  );
+
+  return slugs.filter((slug): slug is string => slug !== null);
 }
 
 export async function getPostBySlug(slug: string): Promise<Post | null> {
