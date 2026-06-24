@@ -67,4 +67,22 @@ draft: true
 
     expect(items.map((item) => item.slug)).toEqual(["published"]);
   });
+
+  it("uses frontmatter slug values for item links", () => {
+    const item = parsePostItem(
+      "rss-source.md",
+      `---
+title: RSS custom slug
+slug: rss-public
+date: 2026-06-24
+---
+# Body
+`,
+    );
+
+    expect(item).toMatchObject({
+      slug: "rss-public",
+      link: "https://po-mato.github.io/posts/rss-public/",
+    });
+  });
 });

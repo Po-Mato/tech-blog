@@ -24,9 +24,10 @@ function frontmatterString(value, fallback = "") {
 }
 
 export function parsePostItem(filename, raw) {
-  const slug = filename.replace(/\.(md|mdx)$/i, "");
+  const fallbackSlug = filename.replace(/\.(md|mdx)$/i, "");
   const { data } = matter(raw);
 
+  const slug = frontmatterString(data.slug, fallbackSlug);
   const title = frontmatterString(data.title, slug);
   const date = frontmatterString(data.date, new Date().toISOString());
   const description = frontmatterString(data.description);

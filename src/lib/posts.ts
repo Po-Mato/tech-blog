@@ -23,6 +23,8 @@ export type Post = PostMeta & {
 
 const postsDirectory = path.join(process.cwd(), "content", "posts");
 
+const postFilePattern = /\.(md|mdx)$/i;
+
 async function markdownToHtml(markdown: string): Promise<string> {
   const file = await unified()
     .use(remarkParse)
@@ -35,15 +37,36 @@ async function markdownToHtml(markdown: string): Promise<string> {
   return String(file);
 }
 
+async function readPostFile(filePath: string, fallbackSlug: string): Promise<Post> {
+  const raw = await fs.readFile(filePath, "utf8");
+  const { data, content } = matter(raw);
+
+  const meta: PostMeta = {
+    slug: String(data.slug || fallbackSlug),
+    title: String(data.title || fallbackSlug),
+    date: String(data.date || ""),
+    description: data.description ? String(data.description) : undefined,
+    tags: Array.isArray(data.tags) ? data.tags.map(String) : undefined,
+  };
+
+  const contentHtml = await markdownToHtml(content);
+
+  return {
+    ...meta,
+    contentHtml,
+  };
+}
+
 export async function getPostSlugs(): Promise<string[]> {
   const files = await fs.readdir(postsDirectory);
-  const contentFiles = files.filter((f) => f.endsWith(".md") || f.endsWith(".mdx"));
+  const contentFiles = files.filter((f) => postFilePattern.test(f));
   const slugs = await Promise.all(
     contentFiles.map(async (file) => {
+      const fallbackSlug = file.replace(postFilePattern, "");
       const raw = await fs.readFile(path.join(postsDirectory, file), "utf8");
       const { data } = matter(raw);
 
-      return data.draft === true ? null : file.replace(/\.(md|mdx)$/i, "");
+      return data.draft === true ? null : String(data.slug || fallbackSlug);
     }),
   );
 
@@ -67,25 +90,26 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
     }
   }
 
+  if (!filePath) {
+    const files = (await fs.readdir(postsDirectory)).filter((f) => postFilePattern.test(f));
+
+    for (const file of files) {
+      const fallbackSlug = file.replace(postFilePattern, "");
+      const candidatePath = path.join(postsDirectory, file);
+      const raw = await fs.readFile(candidatePath, "utf8");
+      const { data } = matter(raw);
+
+      if (data.draft === true) continue;
+      if (String(data.slug || fallbackSlug) === slug) {
+        filePath = candidatePath;
+        break;
+      }
+    }
+  }
+
   if (!filePath) return null;
 
-  const raw = await fs.readFile(filePath, "utf8");
-  const { data, content } = matter(raw);
-
-  const meta: PostMeta = {
-    slug: String(data.slug || slug),
-    title: String(data.title || slug),
-    date: String(data.date || ""),
-    description: data.description ? String(data.description) : undefined,
-    tags: Array.isArray(data.tags) ? data.tags.map(String) : undefined,
-  };
-
-  const contentHtml = await markdownToHtml(content);
-
-  return {
-    ...meta,
-    contentHtml,
-  };
+  return readPostFile(filePath, slug);
 }
 
 export async function getAllPosts(): Promise<PostMeta[]> {
