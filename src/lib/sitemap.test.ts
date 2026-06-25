@@ -21,4 +21,27 @@ describe("sitemap utilities", () => {
       ]),
     );
   });
+
+  it("falls back to the current build time for invalid content dates", () => {
+    const now = new Date("2026-06-25T00:00:00.000Z");
+    const sitemap = buildSitemap({
+      posts: [{ slug: "post-a", date: "not-a-date" }],
+      portfolio: [{ slug: "portfolio-a", date: "" }],
+      tags: [],
+      now,
+    });
+
+    expect(sitemap).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          url: "https://po-mato.github.io/posts/post-a/",
+          lastModified: now,
+        }),
+        expect.objectContaining({
+          url: "https://po-mato.github.io/portfolio/portfolio-a/",
+          lastModified: now,
+        }),
+      ]),
+    );
+  });
 });

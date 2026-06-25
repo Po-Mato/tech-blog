@@ -8,6 +8,13 @@ type SitemapContentItem = {
   date: string;
 };
 
+function toSitemapDate(value: string, fallback: Date): Date {
+  if (!value) return fallback;
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? fallback : date;
+}
+
 export function buildSitemap({
   posts,
   portfolio,
@@ -52,13 +59,13 @@ export function buildSitemap({
     })),
     ...posts.map((p) => ({
       url: `${site.url}/posts/${p.slug}/`,
-      lastModified: p.date ? new Date(p.date) : now,
+      lastModified: toSitemapDate(p.date, now),
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),
     ...portfolio.map((p) => ({
       url: `${site.url}/portfolio/${p.slug}/`,
-      lastModified: p.date ? new Date(p.date) : now,
+      lastModified: toSitemapDate(p.date, now),
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
