@@ -47,6 +47,9 @@ for (const slug of ['agent-memory', 'agent-reliability', 'agent-development']) {
 const tags = new Set(posts.flatMap((post) => normalizeTags(post.tags)));
 for (const tag of tags) {
   const html = markup(await read(`tags/${tag.replaceAll("/", "%2F")}`));
+  if (tag.includes('/')) {
+    assert.equal(markup(await read(`tags/${tag}`)), html, `${tag}: GitHub Pages decoded path missing`);
+  }
   const expected = posts.filter((post) => normalizeTags(post.tags).includes(tag));
   for (const post of expected)
     assert(html.includes(`/posts/${post.slug}/`), `${tag}: missing ${post.slug}`);

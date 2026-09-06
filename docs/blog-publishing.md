@@ -26,7 +26,7 @@ tags: ["AI Agents", "Software Architecture"]
 
 홈에는 추천 3편과 최신 10편을 표시합니다. 이후 글은 `/archive/2/`부터 10편 단위로 제공하며, 1페이지는 `/`입니다. 추천 글과 시리즈 읽기 순서는 `src/lib/editorial.ts`에서 관리합니다. 시리즈에 등록된 글의 하단에는 전체 읽기 순서가 표시됩니다.
 
-태그 링크는 URL에서만 인코딩합니다. `generateStaticParams`에는 원래 태그 이름을 전달해야 이중 인코딩과 빈 태그 페이지를 피할 수 있습니다. 기존 별칭 URL도 생성하고 대표 태그의 canonical을 지정합니다.
+태그 링크는 URL에서만 인코딩합니다. `generateStaticParams`에는 원래 태그 이름을 전달해야 이중 인코딩과 빈 태그 페이지를 피할 수 있습니다. 기존 별칭 URL도 생성하고 대표 태그의 canonical을 지정합니다. `CI/CD`처럼 슬래시가 들어가는 태그는 GitHub Pages가 `%2F`를 경로 구분자로 해석하므로, `prepare-pages-paths.mjs`가 HTML과 RSC 파일을 디코딩된 경로에도 복사합니다.
 
 ## 검증과 배포
 

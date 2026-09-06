@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "prebuild": "pnpm content:check && node scripts/generate-search-index.mjs && node scripts/generate-daily-game.mjs",
-    "build": "next build && node scripts/generate-rss.mjs && node scripts/verify-export.mjs",
+    "build": "next build && node scripts/generate-rss.mjs && node scripts/prepare-pages-paths.mjs && node scripts/verify-export.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
