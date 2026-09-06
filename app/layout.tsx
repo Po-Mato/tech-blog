@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { isRTL } from "react-aria-components";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Geist, Geist_Mono } from 'next/font/google';
+import { isRTL } from 'react-aria-components';
+import './globals.css';
 
-import DynamicUniverse from "../src/components/DynamicUniverse";
-import SiteNav from "../src/components/SiteNav";
-import { site } from "../src/lib/site";
+import DynamicUniverse from '../src/components/DynamicUniverse';
+import SiteNav from '../src/components/SiteNav';
+import { site } from '../src/lib/site';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  variable: '--font-geist-sans',
+  subsets: ['latin'],
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: '--font-geist-mono',
+  subsets: ['latin'],
 });
 
 export const metadata: Metadata = {
@@ -25,10 +25,11 @@ export const metadata: Metadata = {
   },
   description: site.description,
   alternates: {
-    canonical: "/",
+    canonical: '/',
+    types: { 'application/rss+xml': '/rss.xml' },
   },
   openGraph: {
-    type: "website",
+    type: 'website',
     url: site.url,
     title: site.title,
     description: site.description,
@@ -37,7 +38,7 @@ export const metadata: Metadata = {
     images: [{ url: site.ogImage }],
   },
   twitter: {
-    card: "summary_large_image",
+    card: 'summary_large_image',
     title: site.title,
     description: site.description,
     images: [site.ogImage],
@@ -52,7 +53,7 @@ export default async function RootLayout({
   const lang = site.locale;
 
   return (
-    <html lang={lang} dir={isRTL(lang) ? "rtl" : "ltr"} className="h-full">
+    <html lang={lang} dir={isRTL(lang) ? 'rtl' : 'ltr'} className="h-full">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full transition-colors duration-500`}
       >

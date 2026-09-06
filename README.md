@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Po-Mato 기술 블로그
 
-## Getting Started
+AI 에이전트와 소프트웨어 아키텍처를 기록하는 Next.js 정적 블로그입니다.
 
-First, run the development server:
+- 사이트: https://po-mato.github.io
+- 소스: https://github.com/Po-Mato/tech-blog
+- 글: `content/posts/`
+- 추천·시리즈: `src/lib/editorial.ts`
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+## 개발
+
+```sh
+pnpm install --frozen-lockfile
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 검증
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+pnpm lint
+pnpm test
+pnpm build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`pnpm build`는 콘텐츠 메타데이터, 검색·RSS, 페이지 이동, 태그와 시리즈의 정적 산출물까지 검사합니다. 결과물은 `out/`에 생성됩니다.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`main`에 push하면 GitHub Actions가 `Po-Mato/Po-Mato.github.io`에 배포합니다. [발행·배포 가이드](docs/blog-publishing.md)를 참고하세요.

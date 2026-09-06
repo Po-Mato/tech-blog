@@ -1,3 +1,10 @@
+---
+title: "[Premium Report] GitNexus: The Dawn of Serverless Code Intelligence"
+date: "2026-02-26"
+description: "GitNexus의 서버리스 코드 분석 구조와 코드 관계 탐색 방식을 살펴봅니다."
+tags: ["Code Intelligence", "Architecture"]
+---
+
 # [Premium Report] GitNexus: The Dawn of Serverless Code Intelligence
 
 **Date:** 2026-02-26

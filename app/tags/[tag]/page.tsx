@@ -1,17 +1,24 @@
-import Link from "next/link";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import Link from 'next/link';
+import { formatDate } from '../../../src/lib/content/metadata.mjs';
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 
-import { getAllPosts } from "../../../src/lib/posts";
-import { getAllTags, slugToTag, tagMatches, tagToSlug } from "../../../src/lib/tags";
-import { site } from "../../../src/lib/site";
+import { getAllPosts } from '../../../src/lib/posts';
+import {
+  getTagRoutes,
+  normalizeTag,
+  slugToTag,
+  tagMatches,
+  tagToSlug,
+} from '../../../src/lib/tags';
+import { site } from '../../../src/lib/site';
 
-export const dynamic = "force-static";
+export const dynamic = 'force-static';
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  const tags = await getAllTags();
-  return tags.map(({ tag }) => ({ tag: tagToSlug(tag) }));
+  const tags = await getTagRoutes();
+  return tags.map((tag) => ({ tag }));
 }
 
 export async function generateMetadata({
@@ -20,7 +27,7 @@ export async function generateMetadata({
   params: Promise<{ tag: string }>;
 }): Promise<Metadata> {
   const { tag: tagSlug } = await params;
-  const tag = slugToTag(tagSlug);
+  const tag = normalizeTag(slugToTag(tagSlug));
   if (!tag) return {};
 
   const title = `#${tag}`;
@@ -30,11 +37,11 @@ export async function generateMetadata({
     title,
     description,
     alternates: {
-      canonical: `/tags/${tagSlug}/`,
+      canonical: `/tags/${tagToSlug(tag)}/`,
     },
     openGraph: {
-      type: "website",
-      url: `${site.url}/tags/${tagSlug}/`,
+      type: 'website',
+      url: `${site.url}/tags/${tagToSlug(tag)}/`,
       title: `${title} | ${site.title}`,
       description,
       images: [{ url: site.ogImage }],
@@ -42,15 +49,11 @@ export async function generateMetadata({
   };
 }
 
-export default async function TagPage({
-  params,
-}: {
-  params: Promise<{ tag: string }>;
-}) {
+export default async function TagPage({ params }: { params: Promise<{ tag: string }> }) {
   const { tag: tagSlug } = await params;
-  const tag = slugToTag(tagSlug);
+  const tag = normalizeTag(slugToTag(tagSlug));
   const posts = (await getAllPosts()).filter((p) =>
-    (p.tags ?? []).some((postTag) => tagMatches(postTag, tag))
+    (p.tags ?? []).some((postTag) => tagMatches(postTag, tag)),
   );
 
   if (!tag) notFound();
@@ -78,12 +81,11 @@ export default async function TagPage({
               key={post.slug}
               className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-200 hover:border-cyan-300/35 hover:bg-black/40"
             >
-              <div className="text-sm text-white/60">{post.date}</div>
+              <time dateTime={post.date} className="font-mono text-sm text-white/60">
+                {formatDate(post.date)}
+              </time>
               <h2 className="mt-1 text-xl font-semibold leading-snug">
-                <Link
-                  className="transition hover:text-cyan-100"
-                  href={`/posts/${post.slug}/`}
-                >
+                <Link className="transition hover:text-cyan-100" href={`/posts/${post.slug}/`}>
                   {post.title}
                 </Link>
               </h2>

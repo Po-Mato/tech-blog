@@ -1,39 +1,40 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { pathToFileURL } from "node:url";
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
-import matter from "gray-matter";
+import matter from 'gray-matter';
+import { normalizeDate, normalizeTags } from '../src/lib/content/metadata.mjs';
 
-const POSTS_DIR = path.join(process.cwd(), "content", "posts");
-const PORTFOLIO_DIR = path.join(process.cwd(), "content", "portfolio");
-const OUT_FILE = path.join(process.cwd(), "public", "search-index.json");
+const POSTS_DIR = path.join(process.cwd(), 'content', 'posts');
+const PORTFOLIO_DIR = path.join(process.cwd(), 'content', 'portfolio');
+const OUT_FILE = path.join(process.cwd(), 'public', 'search-index.json');
 
 function stripMarkdown(md) {
   return (
     md
       // code fences
-      .replace(/```[\s\S]*?```/g, " ")
+      .replace(/```[\s\S]*?```/g, ' ')
       // inline code
-      .replace(/`[^`]*`/g, " ")
+      .replace(/`[^`]*`/g, ' ')
       // images ![alt](url)
-      .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
       // links [text](url)
-      .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+      .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
       // headings / emphasis / blockquotes / lists
-      .replace(/^#{1,6}\s+/gm, "")
-      .replace(/^>\s+/gm, "")
-      .replace(/^\s*[-*+]\s+/gm, "")
-      .replace(/^\s*\d+\.\s+/gm, "")
-      .replace(/[*_~]+/g, "")
+      .replace(/^#{1,6}\s+/gm, '')
+      .replace(/^>\s+/gm, '')
+      .replace(/^\s*[-*+]\s+/gm, '')
+      .replace(/^\s*\d+\.\s+/gm, '')
+      .replace(/[*_~]+/g, '')
       // HTML tags
-      .replace(/<[^>]+>/g, " ")
+      .replace(/<[^>]+>/g, ' ')
       // collapse whitespace
-      .replace(/\s+/g, " ")
+      .replace(/\s+/g, ' ')
       .trim()
   );
 }
 
-function frontmatterString(value, fallback = "") {
+function frontmatterString(value, fallback = '') {
   if (value instanceof Date) return value.toISOString();
   if (value === undefined || value === null) return fallback;
   return String(value);
@@ -50,8 +51,8 @@ export async function readDocsFromDir(dir, { type }) {
 
   const out = [];
   for (const f of files) {
-    const fallbackSlug = f.replace(/\.(md|mdx)$/i, "");
-    const raw = await fs.readFile(path.join(dir, f), "utf8");
+    const fallbackSlug = f.replace(/\.(md|mdx)$/i, '');
+    const raw = await fs.readFile(path.join(dir, f), 'utf8');
     const parsed = matter(raw);
 
     if (parsed.data.draft === true) {
@@ -61,7 +62,8 @@ export async function readDocsFromDir(dir, { type }) {
     const slug = String(parsed.data.slug || fallbackSlug);
     const title = frontmatterString(parsed.data.title, slug);
     const description = frontmatterString(parsed.data.description);
-    const date = frontmatterString(parsed.data.date);
+    const date =
+      type === 'post' ? normalizeDate(parsed.data.date) : frontmatterString(parsed.data.date);
 
     // posts use tags; portfolio uses stack (but we index both into tags)
     const tags = Array.isArray(parsed.data.tags)
@@ -79,7 +81,7 @@ export async function readDocsFromDir(dir, { type }) {
       title,
       description,
       date,
-      tags,
+      tags: normalizeTags(tags),
       content: contentText,
     });
   }
@@ -93,15 +95,15 @@ export async function generateSearchIndex({
   outFile = OUT_FILE,
 } = {}) {
   const docs = [
-    ...(await readDocsFromDir(postsDir, { type: "post" })),
-    ...(await readDocsFromDir(portfolioDir, { type: "portfolio" })),
+    ...(await readDocsFromDir(postsDir, { type: 'post' })),
+    ...(await readDocsFromDir(portfolioDir, { type: 'portfolio' })),
   ];
 
   // latest first (date string sort)
   docs.sort((a, b) => (a.date < b.date ? 1 : -1));
 
   await fs.mkdir(path.dirname(outFile), { recursive: true });
-  await fs.writeFile(outFile, JSON.stringify({ version: 1, docs }, null, 2), "utf8");
+  await fs.writeFile(outFile, JSON.stringify({ version: 1, docs }, null, 2), 'utf8');
   console.log(`Wrote ${outFile} (${docs.length} docs)`);
 }
 

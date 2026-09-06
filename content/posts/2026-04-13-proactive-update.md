@@ -1,7 +1,6 @@
 ---
-title: "AI Agent Production Reliability — SLO 설계와 Failure Recovery 패턴 (2026년 4월)"
+title: "에이전트 운영 신뢰성: SLO와 실패 복구 패턴"
 date: 2026-04-13
-description: "프레임워크 선택을 넘어, AI Agent를 프로덕션에서 안정적으로 운영하는 데 필요한 핵심 과제. Agent SLO 정의, 실패 복구 메커니즘, 실행 신뢰성을 높이기 위한 아키텍처적 선택지를 실제 코드와 함께 다룬다."
 tags:
   - AI Agents
   - Agent SLO
@@ -11,13 +10,14 @@ tags:
   - Failure Recovery
   - System Design
   - Observability
+description: "에이전트의 성공 기준을 SLO로 정의하고, 실패 복구와 실행 기록을 통해 운영 신뢰성을 점검하는 방법을 다룹니다."
 ---
 
 ## 서론: 프레임워크 뒤의 진짜 문제
 
 이전 글(Multi-Agent 프레임워크 비교)에서 우리는 LangGraph, Claude SDK, CrewAI, AutoGen의 설계 철학과 트레이드오프를 살펴봤다. 그 글의 결론 중 하나는 "프레임워크 선택은 아키텍처 결정이 아니다"라는 것이었다.
 
-2026년 4월 현재, 기업들은 이미 그 결론을 체감하고 있다. Belitsoft의 2026년 리포트에 따르면, 기업들은 평균 12개의 AI Agent를 운영하지만 절반은 여전히 단독으로运作하며 서로 연결되지 않는다. 즉, 프레임워크를 선택하는 것은 시작일 뿐이고, 그 뒤에 오는 진짜 과제는 ** Reliability(신뢰성)** — Agent가 약속한 작업을 약속된 품질로, 약속된 시간 안에 완수하는가다.
+2026년 4월 현재, 기업들은 이미 그 결론을 체감하고 있다. Belitsoft의 2026년 리포트에 따르면, 기업들은 평균 12개의 AI Agent를 운영하지만 절반은 여전히 단독으로 동작하며 서로 연결되지 않는다. 즉, 프레임워크를 선택하는 것은 시작일 뿐이고, 그 뒤에 오는 진짜 과제는 ** Reliability(신뢰성)** — Agent가 약속한 작업을 약속된 품질로, 약속된 시간 안에 완수하는가다.
 
 이 글은 Agent Reliability를 위한 3가지 핵심 영역 — **SLO 설계, Failure Recovery, Observability** — 을 다룬다.
 
@@ -172,7 +172,7 @@ Failure Type 분류:
 │   └── 주의: Max retry 횟수 설정으로 무한 재시도 방지
 │
 ├── Model Failure (모델 실패)
-│   ├── 원인: 모델 응답 오류, 품질 저하,幻觉 内容 생성
+│   ├── 원인: 모델 응답 오류, 품질 저하,환각이 포함된 응답 생성
 │   ├── 전략: 1) 검증 로직으로 hallucination 감지 → 2) fallback model로 전환
 │   └── 주의: Hallucination은 재시도로 해결되지 않음 → human-in-the-loop 필요
 │
@@ -439,7 +439,7 @@ Result Aggregation (LLM call #4 — synthesis)
 User Response
 ```
 
-LLM 호출이 4번이고, 각 호출마다 내부 reasoning이 있으며, 도구 호출에서 재시도가 발생한다. **하나의 "요청"이 내부적으로 10개 이상의 트레이스 이벤트**를 생성한다. 전통적 APM으로 이걸 보면是一片混沌다.
+LLM 호출이 4번이고, 각 호출마다 내부 reasoning이 있으며, 도구 호출에서 재시도가 발생한다. **하나의 "요청"이 내부적으로 10개 이상의 트레이스 이벤트**를 생성한다. 전통적 APM으로 이걸 보면 실행 흐름을 파악하기 어렵다.
 
 ### 구조화된 Agent Trace 설계
 
@@ -532,7 +532,7 @@ from enum import Enum
 
 class CircuitState(Enum):
     CLOSED = "closed"      # 정상 — 요청 통과
-    OPEN = "open"          # 실패过多 — 요청 차단
+    OPEN = "open"          # 실패 과다 — 요청 차단
     HALF_OPEN = "half_open"  # 복구 시도 중
 
 class MCPCircuitBreaker:
@@ -606,18 +606,6 @@ async def call_mcp_server(server_name: str, fn, *args, **kwargs):
 
 3. **Observability**: Agent 실행을 "볼 수 없다면" 고치지도 못한다. OpenTelemetry 기반의 구조화된 Trace로 LLM 호출의 실행 경로를 추적 가능하게 해야 한다. MCP Circuit Breaker로 외부 의존성 실패가 전체 시스템을 못 보내는 것을 방지하라.
 
-**핵심 교훈**: 프레임워크를 선택하는 것은 어렵지 않다. 그 프레임워크 위에서 Agent를 신뢰성 있게 운영하는 것이 진짜 과제다. Belitsoft 리포트가 말하는 "절반이 단독으로运作"라는 현실을 바꾸는 것은 프레임워크 비교가 아니라 Reliability Engineering이다.
+**핵심 교훈**: 프레임워크를 선택하는 것은 어렵지 않다. 그 프레임워크 위에서 Agent를 신뢰성 있게 운영하는 것이 진짜 과제다. Belitsoft 리포트가 말하는 "절반이 단독으로 동작"라는 현실을 바꾸는 것은 프레임워크 비교가 아니라 Reliability Engineering이다.
 
 ---
-
-### 자가 검토 및 개선 사항
-
-1. **SLO 계층의 구체성**: 단순 "성공/실패"가 아닌 품질 점수와 Hallucination Rate를 분리하여 측정하는 것이 실질적 운영에 필수적이라는 관점을 강조함.
-
-2. **코드 예시의 완결성**: Retry + Fallback + Validation을 하나의 함수로 통합한 `with_retry_and_fallback`이 실무에서 바로 사용 가능한 수준으로 구성됨. IdempotencyKey 설계도 실제Redis 기반 구현에 참조 가능.
-
-3. **MCP 의존성 위험 강조**: 이전 글의 MCP生态계 강점과 대비하여, MCP 서버 실패 시 Agent 전체에 미치는 영향을 Circuit Breaker 패턴으로 대응하는 현실적 조언을 포함.
-
-4. **관찰 가능성 섹션의 실질성**: 전통적 APM의 한계와 Agent Trace의 복잡성을 구체적으로 설명하고, OpenTelemetry 기반 통합 예시로 실용적 해결책을 제시.
-
-5. **전편과의 연계성**: 4월 10일(Agent SLO), 4월 11일(Agentic Memory), 4월 12일(Multi-Agent Framework) 글과 자연스럽게 이어지도록 구성. 이 글이 그 시리즈의 "运营적 완결성"을 담당.

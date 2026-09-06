@@ -1,17 +1,18 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import MiniSearch from "minisearch";
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import MiniSearch from 'minisearch';
+import { formatDate } from '../../src/lib/content/metadata.mjs';
 
 function escapeHtml(str: string): string {
   return str
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
 }
 
 function getQueryTerms(q: string): string[] {
@@ -31,11 +32,8 @@ function highlightHtml(text: string, q: string): string {
   let out = escaped;
 
   for (const term of sorted) {
-    const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "ig");
-    out = out.replace(
-      re,
-      '<mark class="rounded bg-cyan-300/20 px-1 text-cyan-50">$1</mark>',
-    );
+    const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'ig');
+    out = out.replace(re, '<mark class="rounded bg-cyan-300/20 px-1 text-cyan-50">$1</mark>');
   }
 
   return out;
@@ -53,12 +51,12 @@ function buildSnippet(content: string, q: string, maxLen = 180): string {
 
   const start = Math.max(0, (idx ?? 0) - 40);
   const snippet = content.slice(start, start + maxLen);
-  return (start > 0 ? "…" : "") + snippet + (start + maxLen < content.length ? "…" : "");
+  return (start > 0 ? '…' : '') + snippet + (start + maxLen < content.length ? '…' : '');
 }
 
 type SearchDoc = {
   id: string;
-  type: "post" | "portfolio";
+  type: 'post' | 'portfolio';
   slug: string;
   title: string;
   description?: string;
@@ -67,7 +65,7 @@ type SearchDoc = {
   content: string;
 };
 
-type SortMode = "relevance" | "new";
+type SortMode = 'relevance' | 'new';
 
 type SearchIndex = {
   version: number;
@@ -76,8 +74,8 @@ type SearchIndex = {
 
 function buildMiniSearch(docs: SearchDoc[]) {
   const miniSearch = new MiniSearch<SearchDoc>({
-    fields: ["title", "description", "tags", "content"],
-    storeFields: ["type", "slug", "title", "description", "date", "tags"],
+    fields: ['title', 'description', 'tags', 'content'],
+    storeFields: ['type', 'slug', 'title', 'description', 'date', 'tags'],
     searchOptions: {
       boost: { title: 5, tags: 3, description: 2, content: 1 },
       prefix: true,
@@ -91,13 +89,14 @@ function buildMiniSearch(docs: SearchDoc[]) {
 
 export default function SearchClient() {
   const searchParams = useSearchParams();
-  const initialQ = (searchParams.get("q") ?? "").trim();
+  const initialQ = (searchParams.get('q') ?? '').trim();
 
   const [q, setQ] = useState(initialQ);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [docs, setDocs] = useState<SearchDoc[]>([]);
-  const [tagFilter, setTagFilter] = useState<string>("all");
-  const [sortMode, setSortMode] = useState<SortMode>("relevance");
+  const [tagFilter, setTagFilter] = useState<string>('all');
+  const [sortMode, setSortMode] = useState<SortMode>('relevance');
 
   useEffect(() => {
     let cancelled = false;
@@ -105,9 +104,12 @@ export default function SearchClient() {
     async function load() {
       try {
         setLoading(true);
-        const res = await fetch("/search-index.json", { cache: "force-cache" });
+        const res = await fetch('/search-index.json', { cache: 'no-cache' });
+        if (!res.ok) throw new Error('Search index unavailable');
         const json = (await res.json()) as SearchIndex;
         if (!cancelled) setDocs(json.docs ?? []);
+      } catch {
+        if (!cancelled) setLoadError(true);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -131,13 +133,13 @@ export default function SearchClient() {
     const query = q.trim();
     if (!query) return [];
 
-    let rows = miniSearch.search(query, { combineWith: "AND" });
+    let rows = miniSearch.search(query, { combineWith: 'AND' });
 
-    if (tagFilter !== "all") {
+    if (tagFilter !== 'all') {
       rows = rows.filter((r) => (r.tags ?? []).includes(tagFilter));
     }
 
-    if (sortMode === "new") {
+    if (sortMode === 'new') {
       rows = [...rows].sort((a, b) => {
         const ad = a.date ? Date.parse(a.date) : 0;
         const bd = b.date ? Date.parse(b.date) : 0;
@@ -195,10 +197,6 @@ export default function SearchClient() {
               <option value="new">최신순</option>
             </select>
           </label>
-
-          <span className="text-sm text-white/55">
-            Tip: <code className="text-white/70">/search?q=nextjs</code>
-          </span>
         </div>
       </div>
 
@@ -206,6 +204,10 @@ export default function SearchClient() {
         <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">인덱스를 불러오는 중...</p>
         </div>
+      ) : loadError ? (
+        <p role="alert" className="p-6 text-white/80">
+          검색 자료를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.
+        </p>
       ) : !q.trim() ? (
         <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">검색어를 입력해줘.</p>
@@ -221,14 +223,18 @@ export default function SearchClient() {
               key={r.id}
               className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-300 hover:border-cyan-300/30 hover:bg-black/35"
             >
-              {r.date ? <div className="text-sm text-white/60">{r.date}</div> : null}
+              {r.date ? (
+                <time dateTime={r.date} className="font-mono text-sm text-white/60">
+                  {formatDate(r.date)}
+                </time>
+              ) : null}
               <div className="text-xs tracking-wide text-white/50">
-                {r.type === "portfolio" ? "PORTFOLIO" : "POST"}
+                {r.type === 'portfolio' ? 'PORTFOLIO' : 'POST'}
               </div>
               <h2 className="mt-1 text-xl font-semibold">
                 <Link
                   className="hover:text-cyan-100"
-                  href={r.type === "portfolio" ? `/portfolio/${r.slug}/` : `/posts/${r.slug}/`}
+                  href={r.type === 'portfolio' ? `/portfolio/${r.slug}/` : `/posts/${r.slug}/`}
                 >
                   <span
                     dangerouslySetInnerHTML={{
@@ -249,7 +255,7 @@ export default function SearchClient() {
 
               {(() => {
                 const doc = docs.find((d) => d.slug === r.slug && d.type === r.type);
-                const snippet = doc ? buildSnippet(doc.content, q) : "";
+                const snippet = doc ? buildSnippet(doc.content, q) : '';
                 return snippet ? (
                   <p
                     className="mt-3 text-sm text-white/60"
@@ -275,12 +281,6 @@ export default function SearchClient() {
           ))}
         </ul>
       )}
-
-      <footer className="mt-10 text-sm text-white/50">
-        <p>
-          인덱스 문서: <code className="text-white/60">/search-index.json</code>
-        </p>
-      </footer>
     </main>
   );
 }

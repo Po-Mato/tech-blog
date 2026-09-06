@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: oklch(0.13 0.02 256);
@@ -28,12 +28,20 @@ body {
   background:
     radial-gradient(circle at 8% -8%, oklch(0.68 0.16 218 / 0.16), transparent 34%),
     radial-gradient(circle at 88% 2%, oklch(0.66 0.12 300 / 0.13), transparent 36%),
-    linear-gradient(180deg, oklch(0.12 0.02 256) 0%, oklch(0.14 0.02 256) 52%, oklch(0.12 0.02 256) 100%);
+    linear-gradient(
+      180deg,
+      oklch(0.12 0.02 256) 0%,
+      oklch(0.14 0.02 256) 52%,
+      oklch(0.12 0.02 256) 100%
+    );
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
   position: relative;
-  transition: color 300ms ease, background-color 300ms ease, border-color 300ms ease;
+  transition:
+    color 300ms ease,
+    background-color 300ms ease,
+    border-color 300ms ease;
 }
 
 #universe {
@@ -56,4 +64,97 @@ body {
   box-shadow:
     0 14px 24px -20px var(--primary-shadow),
     0 8px 14px -16px var(--primary-shadow);
+}
+
+/* Readable article typography without requiring a client-side renderer. */
+.prose {
+  font-size: 1rem;
+  line-height: 1.85;
+  overflow-wrap: anywhere;
+}
+.prose > * + * {
+  margin-top: 1.25em;
+}
+.prose h1 {
+  font-size: 1.8em;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.prose h2 {
+  margin-top: 2em;
+  font-size: 1.45em;
+  font-weight: 650;
+  line-height: 1.45;
+}
+.prose h3 {
+  margin-top: 1.6em;
+  font-size: 1.2em;
+  font-weight: 650;
+}
+.prose a {
+  color: #a5f3fc;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.prose ul {
+  list-style: disc;
+  padding-left: 1.5em;
+}
+.prose ol {
+  list-style: decimal;
+  padding-left: 1.5em;
+}
+.prose li + li {
+  margin-top: 0.5em;
+}
+.prose pre {
+  overflow-x: auto;
+  border: 1px solid #ffffff20;
+  background: #020617;
+  padding: 1.25em;
+  border-radius: 0.5rem;
+  font-size: 0.85em;
+  line-height: 1.7;
+}
+.prose code {
+  font-family: var(--font-geist-mono), monospace;
+}
+.prose :not(pre) > code {
+  background: #ffffff10;
+  padding: 0.15em 0.3em;
+  border-radius: 0.2em;
+}
+.prose blockquote {
+  border-left: 2px solid #a5f3fc80;
+  padding-left: 1.25em;
+  color: #ffffffb3;
+}
+.prose table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.prose th,
+.prose td {
+  border: 1px solid #ffffff25;
+  padding: 0.6em 0.8em;
+  text-align: left;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+:focus-visible {
+  outline: 2px solid #a5f3fc;
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

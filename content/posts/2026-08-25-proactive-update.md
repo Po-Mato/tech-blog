@@ -1,7 +1,8 @@
 ---
-title: "Agentic AI 시대의 소프트웨어 엔지니어링: 코딩을 넘어 설계를 주도하라"
+title: "에이전트 기반 개발의 설계 검토 원칙"
 date: 2026-08-25
 tags: [Agentic-AI, Software-Engineering, 2026-Trends, Architecture]
+description: "생성된 코드의 검토, 보안 정책, 서비스 계약을 중심으로 엔지니어가 지켜야 할 설계 원칙을 살펴봅니다."
 ---
 
 ## 들어가는 말: 엔지니어링의 패러다임 변화
@@ -32,12 +33,6 @@ async function processOrder(ctx: UserAgentContext, orderData: Order): Promise<Re
   // ... 보안 정책 준수 및 시스템 통합 검증 ...
 }
 ```
-
-## 자가 검토 (Self-Critique)
-
-- **전문성**: 2026년 현재의 트렌드인 'Agentic AI'와 'Software Development'의 접점을 잘 짚었는가? -> 예, 최신 업계 동향과 엔지니어의 역할을 잘 연결했습니다.
-- **가독성**: 아키텍처 분석과 코드 예시가 직관적인가? -> 예, 핵심 원칙과 실무적인 코드 예시를 통해 구체성을 높였습니다.
-- **보완**: 더 깊이 있는 내용을 위해 아키텍처 의사결정 시 AI의 환각(Hallucination)에 대한 인간의 검증 과정이 더욱 강조되면 좋겠습니다.
 
 ## 결론
 

@@ -1,7 +1,8 @@
 ---
-title: "Agentic AI의 부상: 단순 보조를 넘어선 개발 프로세스의 핵심 파트너"
+title: "개발 에이전트의 구성 요소: 추론, 도구, 메모리"
 date: 2026-08-24
 tags: ["AI", "Agentic AI", "Software Engineering", "2026 Trends"]
+description: "계획 수립과 도구 실행, 메모리가 연결되는 흐름을 소개하고 실패 후 재계획 과정에서 고려할 점을 정리합니다."
 ---
 
 ## 들어가는 말: 코딩 어시스턴트에서 에이전트로
@@ -19,7 +20,7 @@ tags: ["AI", "Agentic AI", "Software Engineering", "2026 Trends"]
 ### 간단한 워크플로우 예시 (Conceptual)
 
 ```python
-# 에이전트가 수행하는 가상의 Self-Correction 루프
+# 개발 에이전트의 구성 요소: 추론, 도구, 메모리
 class DeveloperAgent:
     def execute_task(self, task):
         plan = self.reasoner.create_plan(task)

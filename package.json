@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/generate-search-index.mjs && node scripts/generate-daily-game.mjs",
-    "build": "next build && node scripts/generate-rss.mjs",
+    "prebuild": "pnpm content:check && node scripts/generate-search-index.mjs && node scripts/generate-daily-game.mjs",
+    "build": "next build && node scripts/generate-rss.mjs && node scripts/verify-export.mjs",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
     "automation:guard": "node scripts/automation-guard.mjs",
-    "generate:daily-game": "node scripts/generate-daily-game.mjs"
+    "generate:daily-game": "node scripts/generate-daily-game.mjs",
+    "content:check": "node scripts/validate-content.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

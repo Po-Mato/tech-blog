@@ -1,21 +1,23 @@
-"use client";
+'use client';
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 type NavItem = { href: string; label: string };
 
 const items: NavItem[] = [
-  { href: "/", label: "블로그" },
-  { href: "/games/", label: "게임" },
-  { href: "/portfolio/", label: "포트폴리오" },
-  { href: "/search/", label: "검색" },
-  { href: "/tags/", label: "태그" },
+  { href: '/', label: '블로그' },
+  { href: '/series/', label: '시리즈' },
+  { href: '/games/', label: '게임' },
+  { href: '/portfolio/', label: '포트폴리오' },
+  { href: '/search/', label: '검색' },
+  { href: '/tags/', label: '태그' },
 ];
 
 function isActive(pathname: string, href: string) {
-  if (href === "/") return pathname === "/";
-  if (href.startsWith("/tags/")) return pathname.startsWith("/tags/");
+  if (href === '/')
+    return pathname === '/' || pathname.startsWith('/archive/') || pathname.startsWith('/posts/');
+  if (href.startsWith('/tags/')) return pathname.startsWith('/tags/');
   return pathname.startsWith(href);
 }
 
@@ -42,10 +44,11 @@ export default function SiteNav() {
               <Link
                 key={it.href}
                 href={it.href}
+                aria-current={active ? 'page' : undefined}
                 className={`whitespace-nowrap rounded-full border px-3.5 py-1.5 text-sm font-medium transition duration-200 ${
                   active
-                    ? "border-cyan-300/50 bg-cyan-300/20 text-cyan-50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]"
-                    : "border-white/10 bg-white/[0.06] text-white/75 hover:border-white/20 hover:bg-white/12 hover:text-white"
+                    ? 'border-cyan-300/50 bg-cyan-300/20 text-cyan-50 shadow-[0_0_0_1px_rgba(56,189,248,0.25)]'
+                    : 'border-white/10 bg-white/[0.06] text-white/75 hover:border-white/20 hover:bg-white/12 hover:text-white'
                 }`}
               >
                 {it.label}

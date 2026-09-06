@@ -1,7 +1,6 @@
 ---
-title: "Agentic Memory: AI Agent에게 '기억'을 구현하는 구조적 접근법"
+title: "에이전트 메모리의 네 계층과 컨텍스트 관리"
 date: 2026-04-11
-description: "AI Agent가 대화를跨いで一貫した文脈을 유지하려면 무엇이 필요할까. 이 글은 Working Memory, Episodic Memory, Semantic Memory, Procedural Memory의 4계층 구조로 Agent Memory를 설계하고, 프로덕션에서 검색-보존-忘记의 균형을 TypeScript 예시와 함께 정리한다."
 tags:
   - AI Agents
   - Agent Architecture
@@ -11,13 +10,14 @@ tags:
   - Production AI
   - System Design
   - TypeScript
+description: "작업·일화·의미·절차 기억의 역할을 나누고, 대화 사이에 문맥을 유지하기 위한 검색·보존·삭제의 균형을 설명합니다."
 ---
 
 ## 서론: 왜 Agent Memory인가
 
-이전 글(2026-04-10)에서 Agent SLO와 Execution Journal를 통해 Agent의**실행 품질을 측정**하는 방법을探讨했다. 하지만 측정만으로는 불완전하다. Agent가**이전 대화를 기억하지 못한다**면, TCR은 아무리 높아도 사용자를 만족시키지 못한다.
+이전 글(2026-04-10)에서 Agent SLO와 Execution Journal를 통해 Agent의**실행 품질을 측정**하는 방법을 살펴봤다. 하지만 측정만으로는 불완전하다. Agent가**이전 대화를 기억하지 못한다**면, TCR은 아무리 높아도 사용자를 만족시키지 못한다.
 
- humaine 뇌의 기억은 단일 메커니즘이 아니다.working memory는 현재 사고를支える短期記憶이고, episodic memory는 경험의 시간순 기록이며, semantic memory는 개념과 사실의 지식 기반, procedural memory는技能과 절차의 묶음이다. AI Agent의 Memory도 마찬가지로 다층 구조가 필요하다.
+인간 뇌의 기억은 단일 메커니즘이 아니다. Working memory는 현재 사고를 뒷받침하는 단기 기억이고, episodic memory는 경험의 시간순 기록이며, semantic memory는 개념과 사실의 지식 기반, procedural memory는기술과 절차의 묶음이다. AI Agent의 Memory도 마찬가지로 다층 구조가 필요하다.
 
 ## Agent Memory의 4계층 구조
 
@@ -44,7 +44,7 @@ Agent Memory Architecture
 
 ## Working Memory: Context Window의 전략적 관리
 
-LLM의 Context Window는有限資源이다. 128K 토큰이 있더라도, 모든 대화를 넣으면 최근 중요 정보가薄削된다. Working Memory 관리의 핵심은**중요도 기반 선별(salience-based triage)** 이다.
+LLM의 Context Window는 유한한 자원이다. 128K 토큰이 있더라도, 모든 대화를 넣으면 최근 중요 정보가 묻힐 수 있다. Working Memory 관리의 핵심은**중요도 기반 선별(salience-based triage)** 이다.
 
 ```ts
 type ConversationTurn = {
@@ -58,7 +58,7 @@ type ConversationTurn = {
 
 type WorkingMemoryConfig = {
   maxTokens: number;
- 保留比率: number;       // 항상 유지하는 시스템 프롬프트 비율 (0.3 = 30%)
+ reservedRatio: number;       // 항상 유지하는 시스템 프롬프트 비율 (0.3 = 30%)
   salientBoost: number;  // salient=true 메시지의 가중치 배수
 };
 
@@ -79,7 +79,7 @@ class WorkingMemoryManager {
   getContext(): { role: ConversationTurn["role"]; content: string }[] {
     const reserved = this.getSystemPrompt();
     const reservedTokens = this.estimateTokens(reserved);
-    const availableTokens = this.config.maxTokens * (1 - this.config.保留比率);
+    const availableTokens = this.config.maxTokens * (1 - this.config.reservedRatio);
 
     const turns = this.conversationHistory
       .map((t) => ({
@@ -135,12 +135,12 @@ class WorkingMemoryManager {
 
 이 구조의 핵심 설계 의도는 두 가지다.
 
-- **중요도 가중치**: salient标记된 메시지는 시간과 관계없이 우선 보존
-- **시간衰减**: 오래된 메시지일수록 점진적으로薄削되어 결국 evict
+- **중요도 가중치**: 중요하다고 표시된 메시지는 시간과 관계없이 우선 보존
+- **시간에 따른 감쇠**: 오래된 메시지일수록 중요도가 점진적으로 낮아져 결국 제거된다
 
-## Episodic Memory: 세션 경험을時間순 기록으로 변환
+## Episodic Memory: 세션 경험을시간순 기록으로 변환
 
-Working Memory는 세션이 끝나면 사라진다.Episodic Memory는 이를**세션 단위 경험 record**로 저장한다. 개념적으로 인간의情景記憶에 해당한다.
+Working Memory는 세션이 끝나면 사라진다.Episodic Memory는 이를**세션 단위 경험 record**로 저장한다. 개념적으로 인간의일화 기억에 해당한다.
 
 ```ts
 type EpisodeSummary = {
@@ -151,8 +151,8 @@ type EpisodeSummary = {
   turnCount: number;
 
   // 핵심 정보만 추출한 요약
-  coreTopics: string[];         // ["API 설계", "性能 최적화"]
-  keyDecisions: string[];       // ["Redis caching採用", "DB sharding 결정"]
+  coreTopics: string[];         // ["API 설계", "성능 최적화"]
+  keyDecisions: string[];       // ["Redis 캐싱 도입", "DB sharding 결정"]
   unresolvedTopics: string[];   // ["OAuth 연동 미완료"]
   
   // 메트릭
@@ -168,10 +168,10 @@ class EpisodicMemoryStore {
   private store: /* Vector DB + KV store */ unknown;
 
   async saveEpisode(episode: EpisodeSummary): Promise<void> {
-    // 1. 요약本身的저장 (KV)
+    // 1. 요약 자체를 저장 (KV)
     await this.store.put(`episode:${episode.sessionId}`, episode);
 
-    // 2. 핵심 topic을向量화하여 검색 가능하게 (Vector DB)
+    // 2. 핵심 주제를 벡터화하여 검색 가능하게 (Vector DB)
     for (const topic of episode.coreTopics) {
       await this.store.upsertVector({
         id: `episode:${episode.sessionId}:topic:${topic}`,
@@ -211,11 +211,11 @@ class EpisodicMemoryStore {
 }
 ```
 
-Episodic Memory의 핵심 가치: **다음 세션에서 이전 결정과 맥락을 즉시 참조**할 수 있다. "이전 대화에서 Redis caching採用으로 결정했죠?"라는 문장이 가능해진다.
+Episodic Memory의 핵심 가치: **다음 세션에서 이전 결정과 맥락을 즉시 참조**할 수 있다. "이전 대화에서 Redis 캐싱 도입으로 결정했죠?"라는 문장이 가능해진다.
 
 ## Semantic Memory: 사용자 프로파일의 영속적 저장소
 
-Episodic가 경험의時間순 기록이라면, Semantic Memory는**지식의 구조화된 조직**이다. 사용자 프로파일, 선호도, 프로젝트별 맥락이 여기 해당한다.
+Episodic가 경험의시간순 기록이라면, Semantic Memory는**지식의 구조화된 조직**이다. 사용자 프로파일, 선호도, 프로젝트별 맥락이 여기 해당한다.
 
 ```ts
 type UserProfile = {
@@ -251,7 +251,7 @@ type UserProfile = {
   // 기억할 사실들
   facts: { key: string; value: string; updatedAt: number }[];
 
-  // 제외할 사항 (不喜欢的事物)
+  // 제외할 사항 (선호하지 않는 항목)
   dislikes: string[];
 };
 
@@ -335,7 +335,7 @@ Semantic Memory는**서비스 초기에cold start**가 걸리지만, 시간이 �
 
 ## Procedural Memory: 행동 정책의 버전 관리
 
-지금까지의 Memory는**데이터**였다.Procedural Memory는**정책(policy)** 이다. 프롬프트 템플릿, 도구 사용 규칙, SLO閾値 등이 해당한다.
+지금까지의 Memory는**데이터**였다.Procedural Memory는**정책(policy)** 이다. 프롬프트 템플릿, 도구 사용 규칙, SLO 임계값 등이 해당한다.
 
 ```ts
 type AgentPolicy = {
@@ -388,7 +388,7 @@ class ProceduralMemoryManager {
 }
 ```
 
-Procedural Memory의 핵심: 모든 정책 변경이**버전 관리**되고, 롤백이 가능한 것이다. "왜 이 프롬프트를 이렇게改了んだっけ?"라는 질문에 답을 찾을 수 있다.
+Procedural Memory의 핵심: 모든 정책 변경이**버전 관리**되고, 롤백이 가능한 것이다. "왜 이 프롬프트를 이렇게 바꿨을까?"라는 질문에 답을 찾을 수 있다.
 
 ## Memory 간 상호작용: Forget의 과학
 
@@ -396,7 +396,7 @@ Memory 시스템의 가장 어려운 문제는**무엇을 잊을 것인가**이�
 
 ```ts
 type MemoryHealthScore = {
-  workingMemoryUtilization: number;  // 0.8 이상이면警告
+  workingMemoryUtilization: number;  // 0.8 이상이면 경고
   episodicStaleness: number;         // 너무 오래된 Episode 비율
   semanticOutdatedness: number;      // 마지막 업데이트로부터 경과 시간
   totalMemorySizeMb: number;
@@ -443,7 +443,7 @@ async function runMemoryGC(
 
 **GC의 핵심 원칙**: evict할 때 단순 삭제하지 않고, 중요한 정보는 Semantic Memory로**승격(promotion)** 한다. 이것이 filing cabinet 방식이다 — working desk에서 오래된 서류를 archives로 이동하지만, 완전히 버리지는 않는다.
 
-## Memory检索: Context Window에 넣을 때 품질 결정하기
+## Memory 검색: Context Window에 넣을 때 품질 결정하기
 
 Context Window에 어떤 memory를 넣을지 결정하는**검색 품질**이 Agent 응답 품질을 좌우한다.
 
@@ -502,20 +502,12 @@ async function buildSessionContext(
 Memory 설계는 Agent를**범용 도구**에서**개인화된 파트너**로 만드는 핵심 요소다. 4계층 구조는 단순한 추상화가 아니라 실제 구현 시마다 마주하는 문제들이다.
 
 - Working Memory: 현재 세션의 attention 관리
-- Episodic Memory: 경험의時間순 기록과 검색
+- Episodic Memory: 경험의시간순 기록과 검색
 - Semantic Memory: 사용자 지식의 구조화된 조직
 - Procedural Memory: 정책의 버전 관리
 
 이 네 가지를 갖추면 Agent는 대화 초기에 사용자의 이름, 기술 수준, 작업 스타일을 파악하고, 대화 중에는 맥락을 유지하며, 대화 종료 후에는 결정과 문제를 기록하여**다음 만남에서 기억**한다.
 
-Memory는elligence다. 기억하지 못하는 Agent는 아무리 powerful한 모델也无法建立신뢰를 쌓는다.
+메모리는 에이전트의 연속성을 뒷받침한다. 이전 맥락을 기억하지 못하면 모델의 성능이 높아도 사용자와 신뢰를 쌓기 어렵다.
 
 ---
-
-### 자가 검토 및 개선 사항
-
-1. **이전 글과의 연계**: 2026-04-10 Agent SLO 글의 Execution Journal와 자연스럽게 연결되도록 했다. Episode 요약 → SLO trend로 이어지는 데이터 플로우를 암시적으로 드러냈다.
-2. **구체적 구현 중심**: 추상적 개념 설명이 아닌 TypeScript 코드 중심의 실질적 구현 가이드를 제공했다. 각 계층의 핵심 메서드(save, retrieve, GC)를 구체적으로 기술했다.
-3. ** Forgotten(忘记) 메커니즘 강조**: 단순 저장/검색이 아니라 GC와 evict의 과학을 별도 섹션으로 분리하여"모든 것을 기억하는 시스템은 scaling되지 못한다"는 현실적 제약을 명확히 했다.
-4. **SK Interview 연계**: 사용자 프로파일, 기술 스택 추론, 선호도 학습 등은 Interview 준비나 프로젝트 관리 시나리오에서도 바로 활용 가능한 실용적 패턴이다.
-5. **4월 트렌드 반영**: 2026년 AI Agent 운영 수요 증가에 맞춰 Memory 시스템 도입이 필수이라는 현실적 필요성을 강조한 구성이다.

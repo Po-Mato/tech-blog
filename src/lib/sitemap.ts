@@ -1,7 +1,8 @@
-import type { MetadataRoute } from "next";
+import type { MetadataRoute } from 'next';
 
-import { site } from "./site";
-import { tagToSlug, type TagCount } from "./tags";
+import { site } from './site';
+import { pageCount, pageHref, series } from './editorial';
+import { tagToSlug, type TagCount } from './tags';
 
 type SitemapContentItem = {
   slug: string;
@@ -30,43 +31,61 @@ export function buildSitemap({
     {
       url: site.url,
       lastModified: now,
-      changeFrequency: "weekly" as const,
+      changeFrequency: 'weekly' as const,
       priority: 1,
     },
     {
       url: `${site.url}/portfolio/`,
       lastModified: now,
-      changeFrequency: "monthly" as const,
+      changeFrequency: 'monthly' as const,
       priority: 0.8,
     },
     {
       url: `${site.url}/search/`,
       lastModified: now,
-      changeFrequency: "monthly" as const,
+      changeFrequency: 'monthly' as const,
       priority: 0.4,
     },
     {
       url: `${site.url}/tags/`,
       lastModified: now,
-      changeFrequency: "weekly" as const,
+      changeFrequency: 'weekly' as const,
       priority: 0.5,
     },
+    {
+      url: `${site.url}/series/`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    },
+    ...series.map((item) => ({
+      url: `${site.url}/series/${item.slug}/`,
+      lastModified: now,
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    })),
+    ...Array.from({ length: pageCount(posts.length) - 1 }, (_, i) => ({
+      url: `${site.url}${pageHref(i + 2)}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.4,
+    })),
     ...tags.map(({ tag }) => ({
       url: `${site.url}/tags/${tagToSlug(tag)}/`,
       lastModified: now,
-      changeFrequency: "weekly" as const,
+      changeFrequency: 'weekly' as const,
       priority: 0.4,
     })),
     ...posts.map((p) => ({
       url: `${site.url}/posts/${p.slug}/`,
       lastModified: toSitemapDate(p.date, now),
-      changeFrequency: "monthly" as const,
+      changeFrequency: 'monthly' as const,
       priority: 0.7,
     })),
     ...portfolio.map((p) => ({
       url: `${site.url}/portfolio/${p.slug}/`,
       lastModified: toSitemapDate(p.date, now),
-      changeFrequency: "monthly" as const,
+      changeFrequency: 'monthly' as const,
       priority: 0.6,
     })),
   ];
