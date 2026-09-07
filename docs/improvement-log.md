@@ -11,3 +11,12 @@
 - 소스 이력: https://github.com/Po-Mato/tech-blog/commits/main/
 - 배포 실행: https://github.com/Po-Mato/tech-blog/actions/workflows/deploy-to-po-mato-pages.yml
 - 미해결: 일요일의 기존 글 출처·코드 검토, 월간 유입 데이터 연결 확인.
+
+### 공개 반영 확인
+
+- 개선 소스: `0dc688a5dd488dc1f98f0b1a05323e469f0711e2`.
+- [소스 Actions 성공](https://github.com/Po-Mato/tech-blog/actions/runs/34125427616).
+- [GitHub Pages 배포 성공](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/34125538497).
+- 배포 저장소 커밋 `869da220782dfe21a5263ca90be6a8ac6d54ca8f`가 개선 소스를 참조하고, 공개 `/build-info.json`의 sourceCommit도 일치.
+- [공개 검색 재현 URL](https://po-mato.github.io/search/?q=AI%20a): 새 브라우저 세션에서 제목 원문 보존 및 강조 태그 노출 없음 확인. 기존 세션의 이전 화면은 새 세션에서 해소됨.
+- SEARCH-001 완료. 이 후속 문서 커밋은 검증 근거와 완료 상태만 기록함.
