@@ -6,38 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import MiniSearch from 'minisearch';
 import { formatDate } from '../../src/lib/content/metadata.mjs';
 
-function escapeHtml(str: string): string {
-  return str
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-function getQueryTerms(q: string): string[] {
-  return q
-    .split(/\s+/)
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .slice(0, 6);
-}
-
-function highlightHtml(text: string, q: string): string {
-  const escaped = escapeHtml(text);
-  const terms = getQueryTerms(q);
-  if (!terms.length) return escaped;
-
-  const sorted = [...terms].sort((a, b) => b.length - a.length);
-  let out = escaped;
-
-  for (const term of sorted) {
-    const re = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'ig');
-    out = out.replace(re, '<mark class="rounded bg-cyan-300/20 px-1 text-cyan-50">$1</mark>');
-  }
-
-  return out;
-}
+import { getQueryTerms, highlightHtml } from '../../src/lib/search-highlight';
 
 function buildSnippet(content: string, q: string, maxLen = 180): string {
   const terms = getQueryTerms(q);

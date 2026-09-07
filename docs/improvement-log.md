@@ -1,0 +1,13 @@
+# 블로그 개선 기록
+
+## 2026-09-07 22시 정기 실행
+
+- 시작 소스: `7a23ebf2907d85e4f05c88493152b2966098107f`. 원본 checkout은 깨끗하며 `pnpm automation:guard` 통과.
+- 전용 worktree에서 SEARCH-001 수정: 원문 일치 구간을 한 번만 처리하고 각 구간을 HTML escape한 뒤 강조 태그 생성.
+- 회귀 검증 대상: 다중 검색어, HTML 엔티티, 정규식 특수문자, 대소문자, HTML 입력, 빈 검색어.
+- 일상 점검 범위: 배포 SHA, 홈·검색·RSS·사이트맵·주요 내부 링크, 모바일 검색 화면. 당일 이미 완료한 날짜·태그 개편은 다시 작업하지 않음.
+- 검증 결과: lint 성공, 테스트 43개 통과, build 및 전체 export 검사 성공. 데스크톱·390px 모바일에서 검색 제목 원문 보존과 가로 넘침 없음 확인. 공개 주요 경로 44개 HTTP 200, RSS·사이트맵 XML 정상.
+- 커밋·검증 결과: 이 기록을 포함한 커밋의 Actions 및 해당 실행 보고에서 확인. 배포 전 작성한 기록이므로 공개 반영 완료를 주장하지 않음.
+- 소스 이력: https://github.com/Po-Mato/tech-blog/commits/main/
+- 배포 실행: https://github.com/Po-Mato/tech-blog/actions/workflows/deploy-to-po-mato-pages.yml
+- 미해결: 일요일의 기존 글 출처·코드 검토, 월간 유입 데이터 연결 확인.
