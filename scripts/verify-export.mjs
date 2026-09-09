@@ -38,6 +38,15 @@ for (let page = 2; page <= Math.ceil(posts.length / 10); page++) {
 for (const post of posts) {
   const html = markup(await read(`posts/${post.slug}`));
   assert(html.includes(`datetime="${post.date}"`), `${post.slug}: publication date missing`);
+  const sectionIds = [...html.matchAll(/<h[23]\b[^>]*\bid="(section-[^"]+)"/g)].map((match) => match[1]);
+  assert.equal(new Set(sectionIds).size, sectionIds.length, `${post.slug}: duplicate section IDs`);
+  const toc = html.match(/<nav aria-label="이 글의 목차"[\s\S]*?<\/nav>/)?.[0] ?? '';
+  assert.equal(Boolean(toc), sectionIds.length >= 2, `${post.slug}: table of contents visibility`);
+  for (const id of sectionIds) {
+    const href = `href="#${encodeURIComponent(id)}"`;
+    assert(html.includes(href), `${post.slug}: section permalink missing`);
+    if (toc) assert(toc.includes(href), `${post.slug}: section missing from table of contents`);
+  }
 }
 for (const slug of ['agent-memory', 'agent-reliability', 'agent-development']) {
   const html = markup(await read(`series/${slug}`));

@@ -91,6 +91,28 @@ body {
   font-size: 1.2em;
   font-weight: 650;
 }
+.prose :is(h2, h3)[id] {
+  scroll-margin-top: 6rem;
+}
+.prose :is(h2, h3):target {
+  background: #a5f3fc12;
+  border-radius: 0.25rem;
+}
+.prose a.heading-anchor {
+  display: inline-block;
+  margin-left: 0.4em;
+  padding: 0 0.25em;
+  color: #a5f3fc;
+  font-size: 0.8em;
+  font-weight: 400;
+  text-decoration: none;
+}
+.prose a.heading-anchor:hover {
+  text-decoration: underline;
+}
+.post-toc {
+  overflow-wrap: anywhere;
+}
 .prose a {
   color: #a5f3fc;
   text-decoration: underline;

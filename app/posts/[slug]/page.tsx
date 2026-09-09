@@ -86,6 +86,24 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </Link>
           ))}
         </div>
+        {post.headings.length >= 2 ? (
+          <nav aria-label="이 글의 목차" className="post-toc mt-8 rounded-xl border border-cyan-200/20 bg-slate-950/60 p-5">
+            <details open>
+              <summary className="cursor-pointer font-semibold text-cyan-100">
+                이 글의 목차 <span className="ml-2 text-sm font-normal text-white/60">{post.headings.length}개 항목</span>
+              </summary>
+              <ol className="mt-3 max-h-72 space-y-1 overflow-y-auto pr-2">
+                {post.headings.map((heading) => (
+                  <li key={heading.id} className={heading.depth === 3 ? 'ml-4 border-l border-white/15 pl-3' : ''}>
+                    <a href={`#${encodeURIComponent(heading.id)}`} className="block rounded py-2 text-sm leading-relaxed text-white/80 hover:text-cyan-200 focus-visible:text-cyan-200">
+                      {heading.title}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            </details>
+          </nav>
+        ) : null}
         <div
           className="prose prose-invert mt-10 max-w-none prose-headings:tracking-tight prose-p:text-white/80 prose-a:text-cyan-300 prose-a:transition prose-a:hover:text-cyan-100 prose-li:marker:text-cyan-300"
           // content는 로컬 markdown에서 생성되며, rehype-sanitize로 최소한의 HTML 정리를 거칩니다.

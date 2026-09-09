@@ -3,12 +3,7 @@ import path from 'node:path';
 
 import matter from 'gray-matter';
 import { normalizeDate, normalizeTags } from './content/metadata.mjs';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeSanitize from 'rehype-sanitize';
-import rehypeStringify from 'rehype-stringify';
+import { renderMarkdown, type PostHeading } from './markdown';
 
 export type PostMeta = {
   slug: string;
@@ -20,23 +15,12 @@ export type PostMeta = {
 
 export type Post = PostMeta & {
   contentHtml: string;
+  headings: PostHeading[];
 };
 
 const postsDirectory = path.join(process.cwd(), 'content', 'posts');
 
 const postFilePattern = /\.(md|mdx)$/i;
-
-async function markdownToHtml(markdown: string): Promise<string> {
-  const file = await unified()
-    .use(remarkParse)
-    .use(remarkGfm)
-    .use(remarkRehype)
-    .use(rehypeSanitize)
-    .use(rehypeStringify)
-    .process(markdown);
-
-  return String(file);
-}
 
 async function readPostFile(filePath: string, fallbackSlug: string): Promise<Post | null> {
   const raw = await fs.readFile(filePath, 'utf8');
@@ -52,11 +36,11 @@ async function readPostFile(filePath: string, fallbackSlug: string): Promise<Pos
     tags: normalizeTags(data.tags),
   };
 
-  const contentHtml = await markdownToHtml(content);
+  const rendered = await renderMarkdown(content);
 
   return {
     ...meta,
-    contentHtml,
+    ...rendered,
   };
 }
 
