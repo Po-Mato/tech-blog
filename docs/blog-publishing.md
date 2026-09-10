@@ -42,3 +42,6 @@ tags: ["AI Agents", "Software Architecture"]
 6. 소스 Actions 성공뿐 아니라 배포 저장소의 커밋 메시지, GitHub Pages 배포 완료, 실제 사이트의 `/build-info.json`에 기록된 `sourceCommit`도 확인합니다.
 
 2026-09-07 점검에서 9월 글이 4월 글 뒤에 보였던 원인은 날짜 누락 글 4개가 정렬에 `NaN`을 유입시킨 것이었습니다. 메타데이터를 복구하고 모든 발행 경로에서 ISO 날짜를 사용하도록 통일했습니다. 정기 Codex 개선 자동화는 점검 당시 `PAUSED`였으며, 재개 여부는 별도의 운영 설정입니다.
+
+
+검색 레이아웃 변경 시 `agent-browser`를 설치한 환경에서 정적 산출물을 별도 HTTP 서버로 연 뒤 `pnpm test:search-layout http://localhost:8799`를 실행합니다. 320/390/768/1280px의 실제 결과와 공백 없는 긴 문자열을 검사합니다. 배포 후에는 `pnpm test:search-layout https://po-mato.github.io`로 같은 회귀 검사를 수행할 수 있습니다.

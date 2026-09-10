@@ -186,11 +186,11 @@ export default function SearchClient() {
           <p className="text-white/80">검색 결과가 없어요.</p>
         </div>
       ) : (
-        <ul className="grid gap-4 md:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {results.map((r) => (
             <li
               key={r.id}
-              className="rounded-2xl border border-white/10 bg-black/30 p-6 backdrop-blur transition duration-300 hover:border-cyan-300/30 hover:bg-black/35"
+              className="min-w-0 rounded-2xl border border-white/10 bg-black/30 p-6 [overflow-wrap:anywhere] backdrop-blur transition duration-300 hover:border-cyan-300/30 hover:bg-black/35"
             >
               {r.date ? (
                 <time dateTime={r.date} className="font-mono text-sm text-white/60">
