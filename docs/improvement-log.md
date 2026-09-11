@@ -94,3 +94,14 @@
 - 유지보수: 공개 홈 내부 링크 43개 정상, RSS·사이트맵 XML 정상, 검색 141편·RSS 최신 글 2026-09-02 일치. 검색 카드 회귀 검사도 8개 조합 통과.
 - 다음 후보: DISCOVER-001 시리즈 밖 관련 글. 태그 아카이브의 이름 검색이 없는 것을 확인해 DISCOVER-002 후보를 추가했다. 이번 기능 완료 후에도 미완료 고도화 후보 5개를 유지한다.
 - 배포 전 기록: 정확한 소스 SHA, Actions·Pages 및 공개 기능 확인은 후속 확인에 기록한다. 아직 공개 완료로 집계하지 않는다.
+
+
+### 9월 11일 공개 반영 확인
+
+- 기능 소스: `b46d5bdb8a67edfba23feebcf6c2b79b16a2c93a`.
+- [소스 Actions 성공](https://github.com/Po-Mato/tech-blog/actions/runs/34602769145), [Pages 성공](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/34602887422).
+- 배포 저장소 `189ae48bf6045499f6dd2463955000d13ef6264b`가 기능 소스를 참조하고 공개 `/build-info.json`의 sourceCommit도 일치한다.
+- 공개 사이트에서 `pnpm test:code-copy https://po-mato.github.io` 전체 통과: 네 코드 블록, 원문, Enter/Space, 연속 복사, 안내 초기화, 권한 거절·미지원, 모바일/데스크톱, 목차, JavaScript 없는 HTML, 대기 작업 정리, 코드 없는 글, 재방문.
+- 별도의 새 공개 브라우저 세션에서 실제 클립보드 권한을 허용한 뒤 복사한 값과 코드 원문의 일치를 확인했다. Space로 재복사 성공, 버튼 포커스 유지, 390px 화면에서 가로 넘침 없음과 성공 안내를 직접 확인했다.
+- [공개 기능 확인 글](https://po-mato.github.io/posts/2026-09-02-proactive-update/).
+- READ-002 완료. 다음 우선 후보는 DISCOVER-001 시리즈 밖 관련 글 연결이며 미완료 고도화 후보 5개를 유지한다. 이 후속 문서 커밋은 완료 근거만 기록하고 별도 고도화로 집계하지 않는다.
