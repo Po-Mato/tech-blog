@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import PostContent from '../../../src/components/PostContent';
 import { formatDate } from '../../../src/lib/content/metadata.mjs';
 import { series, selectPosts } from '../../../src/lib/editorial';
 import { tagToSlug } from '../../../src/lib/tags';
@@ -104,11 +105,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </details>
           </nav>
         ) : null}
-        <div
-          className="prose prose-invert mt-10 max-w-none prose-headings:tracking-tight prose-p:text-white/80 prose-a:text-cyan-300 prose-a:transition prose-a:hover:text-cyan-100 prose-li:marker:text-cyan-300"
-          // content는 로컬 markdown에서 생성되며, rehype-sanitize로 최소한의 HTML 정리를 거칩니다.
-          dangerouslySetInnerHTML={{ __html: post.contentHtml }}
-        />
+        <PostContent contentHtml={post.contentHtml} />
       </article>
       {memberships.map((item) => (
         <nav

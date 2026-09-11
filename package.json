@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:search-layout": "node scripts/check-search-layout.mjs",
+    "test:code-copy": "node scripts/check-code-copy.mjs",
     "automation:guard": "node scripts/automation-guard.mjs",
     "generate:daily-game": "node scripts/generate-daily-game.mjs",
     "content:check": "node scripts/validate-content.mjs"

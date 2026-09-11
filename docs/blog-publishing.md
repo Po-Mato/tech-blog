@@ -45,3 +45,10 @@ tags: ["AI Agents", "Software Architecture"]
 
 
 검색 레이아웃 변경 시 `agent-browser`를 설치한 환경에서 정적 산출물을 별도 HTTP 서버로 연 뒤 `pnpm test:search-layout http://localhost:8799`를 실행합니다. 320/390/768/1280px의 실제 결과와 공백 없는 긴 문자열을 검사합니다. 배포 후에는 `pnpm test:search-layout https://po-mato.github.io`로 같은 회귀 검사를 수행할 수 있습니다.
+
+
+## 코드 블록 복사
+
+글의 코드 블록에는 JavaScript 로드 후 복사 버튼이 붙습니다. 들여쓰기와 마지막 개행을 포함한 코드 원문을 복사하며, 버튼과 상태 문구는 복사 내용에 포함하지 않습니다. 권한 거절·API 미지원 시 수동 선택 안내를 표시합니다. JavaScript 없이도 서버 HTML의 코드를 읽고 수동 복사할 수 있습니다.
+
+`pnpm test:code-copy <사이트 URL>`은 agent-browser의 독립 세션에서 여러 블록, 문자·개행 보존, Enter/Space, 실패 안내, 모바일·데스크톱, 목차 이동, 페이지 전환 정리를 검사합니다. 이 스크립트의 성공/실패 분기는 클립보드 API 대체 객체를 사용합니다. 실제 클립보드 성공은 별도 테스트 세션에서 권한을 허용하고 복사 후 읽은 값과 코드 원문이 일치하는지 추가로 확인합니다.
