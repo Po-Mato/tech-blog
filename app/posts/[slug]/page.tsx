@@ -7,6 +7,7 @@ import { tagToSlug } from '../../../src/lib/tags';
 import { notFound } from 'next/navigation';
 
 import { getPostBySlug, getPostSlugs, getAllPosts } from '../../../src/lib/posts';
+import { relatedPosts } from '../../../src/lib/related-posts';
 import { site } from '../../../src/lib/site';
 
 export const dynamic = 'force-static';
@@ -60,7 +61,8 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
   if (!post) notFound();
 
   const memberships = series.filter((item) => item.slugs.includes(post.slug));
-  const posts = memberships.length ? await getAllPosts() : [];
+  const posts = await getAllPosts();
+  const related = relatedPosts(post, posts, memberships.flatMap(item => item.slugs));
 
   return (
     <main className="mx-auto max-w-4xl px-5 pb-20 pt-8 text-white md:px-8">
@@ -137,6 +139,23 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
           </ol>
         </nav>
       ))}
+      {related.length > 0 ? (
+        <section aria-labelledby="related-posts-heading" className="mt-10 border-t border-white/15 pt-8">
+          <h2 id="related-posts-heading" className="text-2xl font-semibold">함께 읽을 글</h2>
+          <p className="mt-2 text-sm text-white/60">이 글과 세부 주제가 겹치는 글을 골랐습니다.</p>
+          <ul className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {related.map(({ post: entry, sharedTags }) => (
+              <li key={entry.slug} className="min-w-0">
+                <Link href={`/posts/${entry.slug}/`} className="block h-full rounded-xl border border-white/15 bg-slate-950/60 p-5 [overflow-wrap:anywhere] hover:border-cyan-300/50 focus-visible:outline-2 focus-visible:outline-cyan-200">
+                  <time dateTime={entry.date} className="text-xs text-white/60">{formatDate(entry.date)}</time>
+                  <h3 className="mt-2 font-semibold leading-relaxed text-cyan-100">{entry.title}</h3>
+                  <p className="mt-3 text-xs leading-relaxed text-white/70">공통 주제: {sharedTags.join(' · ')}</p>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
     </main>
   );
 }
