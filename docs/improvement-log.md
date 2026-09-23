@@ -181,3 +181,12 @@
 - 초기화 직후 입력 충돌은 동기 구독만으로 해결되지 않아 hydration 완료 전 입력을 비활성화하는 처리를 추가했다. 5초 지연 색인 서버에서 초기 cloud를 AI로 바꾸고 로딩 중·완료 후 모두 정확한 AI 및 Cloud Native 보존을 확인했다.
 - 390/1280px 화면 직접 검토 및 검색 URL 브라우저 회귀 통과: 새로고침·조건 복원·뒤로/앞으로·빠른 입력·특수문자·빈 검색·잘못된 값·별칭·글 이동 후 복원. 합성 composition 이벤트를 사용한 한글 검사이며 실제 OS 입력기 전수 검증은 아니다.
 - 최종 코드의 지연 색인·빠른 입력 포함 브라우저 회귀와 lint·59개 테스트·build 모두 통과했다. 정렬 선택도 초기화 완료 전 비활성화한다. 검색 레이아웃 8개 조합 정상. 생성된 미추적 게임 파일만 제외·정리했다.
+
+
+### 9월 23일 공개 기능 확인
+
+- 기능 소스: 7ab97b50b3f71b798dab6c01fa13cfffc97e4c2c.
+- [소스 Actions 성공](https://github.com/Po-Mato/tech-blog/actions/runs/35865287230), [Pages 성공](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/35865445806).
+- 배포 저장소 c80e1985707ce012dd025464dbfb5183a1fbb2bc의 메시지와 공개 build-info.sourceCommit이 기능 소스와 일치한다.
+- 공개 390/1280px URL 회귀 전체 통과: 검색 조건 링크로 진입·새로고침·뒤로/앞으로·공백/특수문자·빠른 입력·빈 검색·별칭·잘못된 값·합성 조합 이벤트·글 방문 후 검색 복원. 검색 레이아웃 8개 조합도 통과했다.
+- [조건 포함 공개 검색](https://po-mato.github.io/search/?q=cloud&tag=Cloud%20Native&sort=new). SEARCH-002 완료. 다음 고도화는 DISCOVER-002 태그 이름 검색이며 미완료 5개 유지. 이 후속 기록은 별도 기능 성과로 집계하지 않는다.
