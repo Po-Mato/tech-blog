@@ -57,3 +57,10 @@ tags: ["AI Agents", "Software Architecture"]
 ## 관련 글
 
 글 하단의 함께 읽을 글은 구체적인 공통 태그를 근거로 최대 3편을 정적으로 제공한다. 범용 태그만 겹치거나 같은 시리즈 목록에 이미 표시한 글은 제외한다. 추천 이유는 카드의 공통 주제로 표시하며 인기·개인화 순위가 아니다. `node scripts/check-related-posts.mjs <사이트 URL>`로 390/1280px 카드와 실제 이동, 시리즈 중복 제외 및 서버 HTML을 검증한다.
+
+
+## 검색 조건 주소
+
+검색 화면은 q/tag/sort를 URL에서 복원한다. 검색어 입력은 현재 방문 이력을 갱신하고 태그·정렬 선택은 새 이력으로 남긴다. 주소를 공유하거나 새로고침하면 같은 조건으로 검색한다. 기본값은 조작 시 주소에서 생략하며, 알 수 없는 태그는 색인 로딩 성공 후 전체로 해석한다. 입력 문자열은 보존하고 실제 검색에만 trim을 적용한다.
+
+`node scripts/check-search-url.mjs <사이트 URL>`로 390/1280px 입력, 새로고침, 이력 이동, 특수문자, 잘못된 값, 태그 별칭, 글 이동 후 복원을 검사한다. 한글 조합 이벤트 검사는 합성 이벤트이며 실제 OS 입력기 전체를 검증한 것은 아니다. 구현은 [Next.js Native History API](https://nextjs.org/docs/app/getting-started/linking-and-navigating#native-history-api)의 라우터 통합을 사용한다.

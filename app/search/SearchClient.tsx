@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { readSearchConditions, updateSearchUrl, type SearchConditions } from '../../src/lib/search-url';
 import MiniSearch from 'minisearch';
 import { formatDate } from '../../src/lib/content/metadata.mjs';
 
@@ -34,8 +35,6 @@ type SearchDoc = {
   content: string;
 };
 
-type SortMode = 'relevance' | 'new';
-
 type SearchIndex = {
   version: number;
   docs: SearchDoc[];
@@ -56,16 +55,27 @@ function buildMiniSearch(docs: SearchDoc[]) {
   return miniSearch;
 }
 
-export default function SearchClient() {
-  const searchParams = useSearchParams();
-  const initialQ = (searchParams.get('q') ?? '').trim();
+function subscribeSearchUrl(listener: () => void) {
+  window.addEventListener('popstate', listener);
+  window.addEventListener('blog-search-change', listener);
+  return () => {
+    window.removeEventListener('popstate', listener);
+    window.removeEventListener('blog-search-change', listener);
+  };
+}
+const subscribeHydration = () => () => {};
+const getHydrated = () => true;
+const getServerHydrated = () => false;
+const getSearchSnapshot = () => window.location.search;
 
-  const [q, setQ] = useState(initialQ);
+export default function SearchClient() {
+  const hydrated = useSyncExternalStore(subscribeHydration, getHydrated, getServerHydrated);
+  const routeParams = useSearchParams();
+  const search = useSyncExternalStore(subscribeSearchUrl, getSearchSnapshot, () => routeParams.toString());
+  const searchParams = new URLSearchParams(search);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [docs, setDocs] = useState<SearchDoc[]>([]);
-  const [tagFilter, setTagFilter] = useState<string>('all');
-  const [sortMode, setSortMode] = useState<SortMode>('relevance');
 
   useEffect(() => {
     let cancelled = false;
@@ -97,6 +107,19 @@ export default function SearchClient() {
     for (const d of docs) for (const t of d.tags ?? []) set.add(t);
     return [...set].sort((a, b) => a.localeCompare(b));
   }, [docs]);
+
+  const availableTags = loading || loadError ? undefined : allTags;
+  const { q, tag: tagFilter, sort: sortMode } = readSearchConditions(searchParams, availableTags);
+
+  function changeConditions(patch: Partial<SearchConditions>, push = false) {
+    // Read the live URL so rapid edits cannot overwrite one another with stale render state.
+    const next = updateSearchUrl(window.location.href, patch, availableTags);
+    const current = window.location.pathname + window.location.search + window.location.hash;
+    if (next === current) return;
+    if (push) window.history.pushState(null, '', next);
+    else window.history.replaceState(null, '', next);
+    window.dispatchEvent(new Event('blog-search-change'));
+  }
 
   const results = useMemo(() => {
     const query = q.trim();
@@ -130,8 +153,9 @@ export default function SearchClient() {
       <div className="mb-7 space-y-3">
         <input
           aria-label="검색어"
+          disabled={!hydrated}
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => changeConditions({ q: e.target.value })}
           placeholder="예: nextjs, threejs, i18n ..."
           className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white placeholder:text-white/40 outline-none transition focus:border-cyan-300/40 focus:ring-2 focus:ring-cyan-300/20"
         />
@@ -141,8 +165,9 @@ export default function SearchClient() {
             태그
             <select
               aria-label="태그 필터"
+              disabled={loading || loadError}
               value={tagFilter}
-              onChange={(e) => setTagFilter(e.target.value)}
+              onChange={(e) => changeConditions({ tag: e.target.value }, true)}
               className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
             >
               <option value="all">전체</option>
@@ -158,8 +183,9 @@ export default function SearchClient() {
             정렬
             <select
               aria-label="정렬 방식"
+              disabled={!hydrated}
               value={sortMode}
-              onChange={(e) => setSortMode(e.target.value as SortMode)}
+              onChange={(e) => changeConditions({ sort: e.target.value === 'new' ? 'new' : 'relevance' }, true)}
               className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
             >
               <option value="relevance">관련도</option>
