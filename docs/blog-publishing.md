@@ -64,3 +64,10 @@ tags: ["AI Agents", "Software Architecture"]
 검색 화면은 q/tag/sort를 URL에서 복원한다. 검색어 입력은 현재 방문 이력을 갱신하고 태그·정렬 선택은 새 이력으로 남긴다. 주소를 공유하거나 새로고침하면 같은 조건으로 검색한다. 기본값은 조작 시 주소에서 생략하며, 알 수 없는 태그는 색인 로딩 성공 후 전체로 해석한다. 입력 문자열은 보존하고 실제 검색에만 trim을 적용한다.
 
 `node scripts/check-search-url.mjs <사이트 URL>`로 390/1280px 입력, 새로고침, 이력 이동, 특수문자, 잘못된 값, 태그 별칭, 글 이동 후 복원을 검사한다. 한글 조합 이벤트 검사는 합성 이벤트이며 실제 OS 입력기 전체를 검증한 것은 아니다. 구현은 [Next.js Native History API](https://nextjs.org/docs/app/getting-started/linking-and-navigating#native-history-api)의 라우터 통합을 사용한다.
+
+
+## 태그 이름 검색
+
+`/tags/`에서 태그 이름 일부로 필터링한다. 대소문자·연속 공백·Unicode NFC를 정규화하고 문장부호는 일반 문자로 비교한다. 결과 수·빈 결과·초기화와 입력 포커스 복귀를 제공한다. 기존 이름·글 수·순서·URL을 보존하며 JavaScript 없이 서버 HTML의 전체 태그 링크를 이용할 수 있다.
+
+`node scripts/check-tag-search.mjs <사이트 URL>`은 390/1280px 검색·초기화·키보드·실제 공백/슬래시 태그 이동·긴 이름 레이아웃·서버 HTML 링크를 검증한다. 한글 정규화는 단위 테스트 데이터이며 실제 공개 한글 태그가 있다는 뜻은 아니다.

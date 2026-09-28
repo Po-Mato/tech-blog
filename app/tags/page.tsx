@@ -1,4 +1,4 @@
-import Link from "next/link";
+import TagSearch from "../../src/components/TagSearch";
 import type { Metadata } from "next";
 
 import { getAllTags, tagToSlug } from "../../src/lib/tags";
@@ -37,21 +37,7 @@ export default async function TagsPage() {
           <p className="text-white/80">태그가 아직 없습니다.</p>
         </div>
       ) : (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {tags.map(({ tag, count }) => (
-            <li key={tag}>
-              <Link
-                href={`/tags/${tagToSlug(tag)}/`}
-                className="group flex items-center justify-between rounded-2xl border border-white/10 bg-black/25 px-4 py-3 transition duration-200 hover:border-cyan-300/35 hover:bg-black/35"
-              >
-                <span className="text-white/85 transition group-hover:text-cyan-100">#{tag}</span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/65">
-                  {count}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <TagSearch tags={tags.map(entry => ({ ...entry, href: `/tags/${tagToSlug(entry.tag)}/` }))} />
       )}
     </main>
   );
