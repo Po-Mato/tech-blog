@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { readSearchConditions, updateSearchUrl, type SearchConditions } from '../../src/lib/search-url';
 import MiniSearch from 'minisearch';
@@ -69,6 +69,7 @@ const getServerHydrated = () => false;
 const getSearchSnapshot = () => window.location.search;
 
 export default function SearchClient() {
+  const queryInput = useRef<HTMLInputElement>(null);
   const hydrated = useSyncExternalStore(subscribeHydration, getHydrated, getServerHydrated);
   const routeParams = useSearchParams();
   const search = useSyncExternalStore(subscribeSearchUrl, getSearchSnapshot, () => routeParams.toString());
@@ -152,6 +153,7 @@ export default function SearchClient() {
 
       <div className="mb-7 space-y-3">
         <input
+          ref={queryInput}
           aria-label="검색어"
           disabled={!hydrated}
           value={q}
@@ -209,7 +211,25 @@ export default function SearchClient() {
         </div>
       ) : results.length === 0 ? (
         <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
-          <p className="text-white/80">검색 결과가 없어요.</p>
+          <p role="status" className="text-white/80">검색 결과가 없어요.</p>
+          <p className="mt-2 text-sm text-white/60">검색어를 수정하거나 다른 주제에서 글을 찾아보세요.</p>
+          <div aria-label="검색 탐색 도움" className="mt-4 flex flex-wrap gap-3">
+            {tagFilter !== 'all' ? (
+              <button type="button" onClick={() => {
+                changeConditions({ tag: 'all' }, true);
+                queryInput.current?.focus();
+              }} className="min-h-11 rounded-xl border border-cyan-300/40 px-4 py-3 text-sm text-cyan-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan-200">
+                태그 해제하고 다시 찾기
+              </button>
+            ) : null}
+            <button type="button" onClick={() => queryInput.current?.focus()}
+              className="min-h-11 rounded-xl border border-white/20 px-4 py-3 text-sm text-white/85 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan-200">
+              검색어 수정
+            </button>
+            <Link href="/tags/" className="min-h-11 rounded-xl border border-white/20 px-4 py-3 text-sm text-white/85 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan-200">
+              주제 목록 보기
+            </Link>
+          </div>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
