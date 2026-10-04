@@ -277,3 +277,14 @@
 - 기능 소스 6c24857d8642b72752f926f8668836d6ce008fbe. [Actions 성공](https://github.com/Po-Mato/tech-blog/actions/runs/37124896891), [Pages 성공](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/37124950814). 배포 저장소 e7abc8b87059fcf37d4fca3ec683d53ef441dcf6 메시지와 공개 build-info가 기능 SHA를 참조한다.
 - 공개 390/1280px에서 태그 해제·검색어 수정·키보드·입력 포커스·검색어와 정렬 보존·이력 한 번 추가·뒤로/앞으로·주제 목록 왕복·공백/없는 검색어·빠른 입력이 통과했다. SEARCH-004를 완료로 변경했다.
 - 다음 후보 CONTENT-002는 아직 미완료다. 9월 30일 worktree는 이번 완료 기능의 이전 사본으로 보존하며 별도 기능 미완료로 중복 집계하지 않는다. 기록 커밋의 최종 배포 SHA는 실행 보고에서 확인한다.
+
+
+## 2026-10-04 일요일·월초 검토
+- 원본 깨끗함·guard 통과 후 dc73553f61756186d04d4f2fdfe9ef239ce5ace4에서 전용 worktree 사용. 공개 build-info가 시작 SHA와 일치했다. [소스 Actions](https://github.com/Po-Mato/tech-blog/actions/runs/37125100584), [Pages](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/37125168290)의 완료 배포를 점검했다.
+- 홈 내부 링크 43개 정상, 검색 141편·RSS 최신 글 9월 2일, 사이트맵 633개 항목 XML 정상. 링크는 홈 연결 URL 범위이며 전수 사이트 검사가 아니다.
+- 8월 28일·30일 본문·코드·출처를 검토했다. 정의 없는 함수/객체, 승인 주석과 실제 동작 불일치, DB 방언·거리 정렬 불명확성을 확인하고 GitHub 배포 검토·pgvector 공식 문서와 대조한 보완 기준을 backlog에 기록했다. 예제 검사는 독립 namespace와 테스트 대체 객체를 사용했으며 외부 배포·DB 실행은 하지 않았다.
+- 누적 6편 검토, 135편 미검토. 다음은 8월 31일·9월 1일. 오늘 글 본문 교정이나 신규 기능 구현은 없었다.
+- 월초 데이터: 일반 분석 연결 근거와 분석 전용 연결 도구를 찾지 못해 사이트 검색 유입·조회·전환 지표는 확보하지 못했다. GitHub repository traffic과 빈 열린 이슈 목록은 사이트 이용 지표로 사용하지 않았다. 상세 접근 범위는 backlog에 기록했다.
+- 이번 주 실제 배포는 태그 검색·빈 결과 탐색 복구 2개. 다음 주 월 CONTENT-002 실습, 수 READ-003 이어보기, 금 SEARCH-005 재시도로 계획했다. 미완료 후보 5개 유지. 이번 문서 정리는 고도화 완료로 집계하지 않는다.
+- 커밋 전 lint·test·build, 배포 후 정확한 SHA·Actions·Pages·공개 build-info와 대표 동작을 확인하며 최종 링크는 실행 보고에 남긴다.
+- 검증 완료: 공개 검색 복구·태그 검색 390/1280px 전체 회귀와 모바일 화면 직접 검토 통과. lint·64개 테스트·build·export 검사 통과. 이번 빌드가 생성한 미추적 게임 파일만 확인 후 정리했다.
