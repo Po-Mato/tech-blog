@@ -1,3 +1,4 @@
+import PagesAnalytics from '../src/components/PagesAnalytics';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { isRTL } from 'react-aria-components';
@@ -57,10 +58,12 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full transition-colors duration-500`}
       >
+        <PagesAnalytics />
         <DynamicUniverse />
         <div className="relative z-10 min-h-full">
           <SiteNav />
           {children}
+          <footer className="px-6 py-8 text-center text-sm text-white/60"><a href="/privacy/">방문 통계 안내</a></footer>
         </div>
       </body>
     </html>
