@@ -67,7 +67,7 @@ try {
     browser('set', 'viewport', String(width), '844');
     open('2026-09-02-proactive-update');
     clipboard('success');
-    browser('click', button);
+    browser('click', 'button[aria-label="1번째 코드 블록 복사"]');
     matches(0);
     assert(evaluate(`document.querySelector('${button}').getBoundingClientRect().height >= 44`));
     assert(evaluate('document.body.scrollWidth <= innerWidth'));
@@ -79,7 +79,7 @@ try {
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
       writeText: () => new Promise(resolve => { window.__resolveCopy = resolve; })
     } });`);
-  browser('click', button);
+  browser('click', 'button[aria-label="1번째 코드 블록 복사"]');
   assert.equal(evaluate(`document.querySelector('${button}').getAttribute('aria-busy')`), 'true');
   browser('click', 'article > a[href="/"]');
   browser('wait', '--url', new URL('/', base).href);
@@ -93,7 +93,7 @@ try {
   assert.equal(evaluate("document.querySelectorAll('pre > code').length"), 0);
   assert.equal(evaluate(`document.querySelectorAll('${button}').length`), 0);
   open('2026-09-02-proactive-update');
-  assert.equal(evaluate(`document.querySelectorAll('${button}').length`), 1, 'Revisiting must not duplicate controls');
+  assert.equal(evaluate(`document.querySelectorAll('${button}').length`), evaluate("document.querySelectorAll('pre > code').length"), 'Revisiting must not duplicate controls');
   console.log(`Code copy passed: ${count} independent blocks, exact text, Enter/Space, repeated copy, feedback reset, denied/missing API, mobile/desktop, TOC, no-JS HTML, pending cleanup, no-code post, revisit.`);
 } finally {
   browser('close');
