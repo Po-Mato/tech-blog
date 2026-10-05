@@ -16,6 +16,7 @@ const evaluate = js => browser('eval', js).result;
 try {
   const response = await fetch(new URL('/examples/pipeline-lab.py', base));
   assert(response.ok);
+  const downloadsInBrowser = response.headers.get('content-type')?.includes('application/octet-stream');
   const downloaded = await response.text();
   assert.equal(downloaded, expected);
   const directory = mkdtempSync(join(tmpdir(), 'published-lab-'));
@@ -44,9 +45,18 @@ try {
     assert(evaluate(`document.querySelectorAll('.code-copy-toolbar [role="status"]')[${block}].textContent.includes('복사했습니다')`));
     browser('click', `.post-toc a[href="${toc}"]`);
     browser('screenshot', `/tmp/pipeline-lab-${width}.png`);
-    browser('click', 'a[href="/examples/pipeline-lab.py"]');
-    browser('wait', '--url', new URL('/examples/pipeline-lab.py', base).href);
-    assert(evaluate("document.body.textContent.includes('def report(')"));
+    if (downloadsInBrowser) {
+      const downloadDir = mkdtempSync(join(tmpdir(), 'browser-lab-'));
+      try {
+        const target = join(downloadDir, 'pipeline-lab.py');
+        browser('download', 'a[href="/examples/pipeline-lab.py"]', target);
+        assert.equal(readFileSync(target, 'utf8'), expected);
+      } finally { rmSync(downloadDir, { recursive: true, force: true }); }
+    } else {
+      browser('click', 'a[href="/examples/pipeline-lab.py"]');
+      browser('wait', '--url', new URL('/examples/pipeline-lab.py', base).href);
+      assert(evaluate("document.body.textContent.includes('def report(')"));
+    }
   }
   console.log('공개 예제 다운로드·독립 실행·본문 일치·390/1280px 목차·복사·파일 링크·가로 넘침 검사 통과');
 } finally { browser('close'); }
