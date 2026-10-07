@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import ReadingPosition from '../../../src/components/ReadingPosition';
 import PostContent from '../../../src/components/PostContent';
 import { formatDate } from '../../../src/lib/content/metadata.mjs';
 import { series, selectPosts } from '../../../src/lib/editorial';
@@ -107,6 +108,7 @@ export default async function PostPage({ params }: { params: Promise<{ slug: str
             </details>
           </nav>
         ) : null}
+        <ReadingPosition key={slug} slug={slug} />
         <PostContent contentHtml={post.contentHtml} />
       </article>
       {memberships.map((item) => (
