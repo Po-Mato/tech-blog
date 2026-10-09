@@ -155,6 +155,9 @@ export default function SearchClient() {
               className="ml-2 rounded-xl border border-white/10 bg-black/40 px-3 py-1.5 text-white transition duration-200 focus:border-cyan-300/40"
             >
               <option value="all">전체</option>
+              {(loading || loadError) && tagFilter !== 'all' ? (
+                <option value={tagFilter}>#{tagFilter}</option>
+              ) : null}
               {allTags.map((t) => (
                 <option key={t} value={t}>
                   #{t}

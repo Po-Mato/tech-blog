@@ -38,6 +38,7 @@ try {
  for(const width of [390,1280]) {
   b('set','viewport',String(width),'844');setup(['503','hold']);
   e("history.replaceState(null,'','/search/?q=Rust&tag=Rust&sort=new&source=retry#keep');dispatchEvent(new Event('blog-search-change'))");
+  b('wait','--fn',"document.querySelector('select[aria-label=\"태그 필터\"]').value==='Rust'");
   const before=e('({url:location.href,length:history.length})');
   b('screenshot',`/tmp/search-retry-error-${width}.png`);
   e(`document.querySelector('${retry}').focus()`);b('press',width===390?'Enter':'Space');
