@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'reac
 import { useSearchParams } from 'next/navigation';
 import { readSearchConditions, updateSearchUrl, type SearchConditions } from '../../src/lib/search-url';
 import MiniSearch from 'minisearch';
+import { createSearchLoader, type SearchDoc, type SearchLoadState } from '../../src/lib/search-loader';
 import { formatDate } from '../../src/lib/content/metadata.mjs';
 
 import { getQueryTerms, highlightHtml } from '../../src/lib/search-highlight';
@@ -24,21 +25,7 @@ function buildSnippet(content: string, q: string, maxLen = 180): string {
   return (start > 0 ? '…' : '') + snippet + (start + maxLen < content.length ? '…' : '');
 }
 
-type SearchDoc = {
-  id: string;
-  type: 'post' | 'portfolio';
-  slug: string;
-  title: string;
-  description?: string;
-  date?: string;
-  tags?: string[];
-  content: string;
-};
-
-type SearchIndex = {
-  version: number;
-  docs: SearchDoc[];
-};
+const EMPTY_DOCS: SearchDoc[] = [];
 
 function buildMiniSearch(docs: SearchDoc[]) {
   const miniSearch = new MiniSearch<SearchDoc>({
@@ -74,30 +61,25 @@ export default function SearchClient() {
   const routeParams = useSearchParams();
   const search = useSyncExternalStore(subscribeSearchUrl, getSearchSnapshot, () => routeParams.toString());
   const searchParams = new URLSearchParams(search);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const [docs, setDocs] = useState<SearchDoc[]>([]);
+  const retryButton = useRef<HTMLButtonElement>(null);
+  const loader = useRef<ReturnType<typeof createSearchLoader> | null>(null);
+  const [loadState, setLoadState] = useState<SearchLoadState>({ status: 'loading', canRetry: false });
+  const loading = loadState.status === 'loading';
+  const loadError = loadState.status === 'error';
+  const docs = loadState.status === 'ready' ? loadState.docs : EMPTY_DOCS;
 
   useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      try {
-        setLoading(true);
-        const res = await fetch('/search-index.json', { cache: 'no-cache' });
-        if (!res.ok) throw new Error('Search index unavailable');
-        const json = (await res.json()) as SearchIndex;
-        if (!cancelled) setDocs(json.docs ?? []);
-      } catch {
-        if (!cancelled) setLoadError(true);
-      } finally {
-        if (!cancelled) setLoading(false);
+    const request = createSearchLoader(state => {
+      if (state.status === 'ready' && retryButton.current && document.activeElement === retryButton.current) {
+        queryInput.current?.focus();
       }
-    }
-
-    load();
+      setLoadState(state);
+    });
+    loader.current = request;
+    void request.start();
     return () => {
-      cancelled = true;
+      request.dispose();
+      if (loader.current === request) loader.current = null;
     };
   }, []);
 
@@ -197,14 +179,20 @@ export default function SearchClient() {
         </div>
       </div>
 
-      {loading ? (
-        <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
-          <p className="text-white/80">인덱스를 불러오는 중...</p>
+      {loading || loadError ? (
+        <div data-search-load className="rounded-2xl border border-white/10 bg-black/30 p-6">
+          <p role={loadError ? 'alert' : 'status'} className="text-white/80">
+            {loading ? '검색 자료를 불러오는 중입니다…' : '검색 자료를 불러오지 못했습니다. 검색 조건은 유지됩니다. 다시 시도해 주세요.'}
+          </p>
+          {loadState.canRetry ? (
+            <button ref={retryButton} type="button" data-search-retry
+              aria-disabled={loading} aria-busy={loading}
+              onClick={() => { void loader.current?.start(); }}
+              className="mt-4 min-h-11 rounded-xl border border-cyan-200/30 px-4 py-2 text-cyan-100 aria-disabled:opacity-60">
+              {loading ? '다시 불러오는 중…' : '다시 시도'}
+            </button>
+          ) : null}
         </div>
-      ) : loadError ? (
-        <p role="alert" className="p-6 text-white/80">
-          검색 자료를 불러오지 못했습니다. 잠시 후 새로고침해 주세요.
-        </p>
       ) : !q.trim() ? (
         <div className="rounded-2xl border border-white/10 bg-black/30 p-6">
           <p className="text-white/80">검색어를 입력해줘.</p>
