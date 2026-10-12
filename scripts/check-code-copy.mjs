@@ -13,7 +13,7 @@ function browser(...args) {
   return response.data;
 }
 const evaluate = (js) => browser('eval', js).result;
-const button = '.code-copy-toolbar button';
+const button = '.code-copy-toolbar button[data-code-copy]';
 const status = '.code-copy-toolbar [role="status"]';
 function open(slug) {
   browser('open', new URL(`/posts/${slug}/`, base).href);

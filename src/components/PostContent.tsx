@@ -15,13 +15,25 @@ export default function PostContent({ contentHtml }: { contentHtml: string }) {
       toolbar.className = 'code-copy-toolbar';
       const button = document.createElement('button');
       button.type = 'button';
+      button.dataset.codeCopy = '';
       button.textContent = '코드 복사';
       button.setAttribute('aria-label', `${index + 1}번째 코드 블록 복사`);
       const status = document.createElement('span');
       status.setAttribute('role', 'status');
       status.setAttribute('aria-live', 'polite');
       status.setAttribute('aria-atomic', 'true');
-      toolbar.append(button, status);
+      const wrapButton = document.createElement('button');
+      wrapButton.type = 'button';
+      wrapButton.dataset.codeWrap = '';
+      wrapButton.textContent = '줄바꿈';
+      wrapButton.setAttribute('aria-label', `${index + 1}번째 코드 블록 줄바꿈`);
+      wrapButton.setAttribute('aria-pressed', 'false');
+      function toggleWrap() {
+        const wrapped = pre.classList.toggle('code-wrapped');
+        wrapButton.setAttribute('aria-pressed', String(wrapped));
+      }
+      wrapButton.addEventListener('click', toggleWrap);
+      toolbar.append(button, wrapButton, status);
       pre.before(toolbar);
       pre.classList.add('copy-enabled');
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -61,6 +73,8 @@ export default function PostContent({ contentHtml }: { contentHtml: string }) {
       cleanups.push(() => {
         clearTimeout(timer);
         button.removeEventListener('click', copy);
+        wrapButton.removeEventListener('click', toggleWrap);
+        pre.classList.remove('code-wrapped');
         toolbar.remove();
         pre.classList.remove('copy-enabled');
       });
