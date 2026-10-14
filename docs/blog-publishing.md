@@ -102,3 +102,10 @@ tags: ["AI Agents", "Software Architecture"]
 코드 도구 모음의 ‘줄바꿈’은 해당 블록의 표시만 전환한다. 기본 가로 스크롤과 원문·들여쓰기·복사 문자열을 보존하며 선택은 저장하지 않는다. 키보드 Enter/Space로 조작할 수 있고 눌림 상태를 제공한다.
 
 `node scripts/check-code-wrap.mjs <사이트 URL>`은 320/390/1280px의 블록별 선택·키보드/포커스·실제 코드와 긴 토큰·원문 복사·목차·재방문 정리를 검사한다. 복사 검사는 격리된 clipboard API 대체 객체를 사용한다. 기존 `check-code-copy.mjs`로 복사 실패와 JS 없는 본문도 확인한다.
+
+
+## Go 스트림 종료 실습
+
+8월 29일 글의 전체 Go 프로그램과 테스트는 public/examples/stream-lab.go 및 stream-lab_test.go와 일치해야 한다. pnpm test는 임시 폴더에서 정상 실행·4개 종료 검사·race 반복·두 결함 변형의 실패를 확인한다. Go 1.25.7과 race 지원 C 컴파일러가 필요하며 CI도 해당 Go 버전을 설치한다. 도구가 없으면 실패를 건너뛰지 않는다.
+
+`node scripts/check-stream-lab.mjs <사이트 URL>`은 두 파일을 내려받아 독립 실행·race 검사하고 390/1280px 본문 일치·목차·줄바꿈·복사·파일 링크·넘침을 확인한다. 복사 검사는 격리 clipboard 대체 객체를 사용한다.
