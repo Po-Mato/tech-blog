@@ -401,3 +401,8 @@
 - Go 1.25.7 darwin/arm64에서 정상 출력과 종료·race 10회 통과. pnpm test에 본문/다운로드 동일성·독립 실행·race 검사·출력 취소 제거/입력 종료 제거 변형의 실패를 추가했다. CI에 동일 Go 버전을 명시했다. lint·87개 테스트·build·export 통과.
 - CONTENT-005 작업 상태 실습을 기존 검토 근거로 후보에 추가했다. 공개 검증 전 CONTENT-003은 완료로 집계하지 않는다.
 - 로컬 390/1280px 본문 두 코드와 다운로드 일치, 내려받은 Go 독립 실행·race 10회, 목차·복사·줄바꿈·파일 이동·넘침 검사가 통과했다. 두 크기 실습 안내와 다운로드 화면을 직접 확인했다. 공개 검색 복구 회귀도 통과했다. 복사는 격리 clipboard 대체로 검증했다.
+
+### 10월 14일 Go 실습 공개 완료
+- 기능 소스 9640a6090033475877ac2f89e566abc098f426b1. [소스 Actions 성공](https://github.com/Po-Mato/tech-blog/actions/runs/38569442010), [Pages 성공](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/38569729381). 배포 저장소 2656e7e69efc609deabb34b257b71416fd66f697의 소스 참조와 공개 build-info 일치를 확인했다.
+- [공개 실습 글](https://po-mato.github.io/posts/2026-08-29-proactive-update/)에서 프로그램/테스트 다운로드를 실제 조작하고 원문 일치·독립 실행·4개 종료 검사·race 10회를 확인했다. 390/1280px 목차·줄바꿈·원문 복사·파일 이동·넘침과 실제 화면 검증도 통과했다. 복사 API는 격리 대체 객체를 사용했다.
+- CONTENT-003 완료. 미완료 DISCOVER-003·DISCOVER-004·DISCOVER-005·CONTENT-004·CONTENT-005의 5개 유지. 다음 우선 후보는 DISCOVER-004 월별 지난 글 탐색이다. 완료 기록 커밋도 배포 및 공개 SHA와 대표 동작을 확인하며 최종 링크는 실행 보고에 남긴다.
