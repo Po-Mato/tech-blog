@@ -112,7 +112,7 @@ export default async function Home() {
               최신 글
             </h2>
           </div>
-          <span className="text-sm text-white/50">전체 {posts.length}편 · 최신 10편</span>
+          <div className="flex flex-wrap gap-4 text-sm"><span className="text-white/50">전체 {posts.length}편 · 최신 10편</span><Link href="/archive/month/" className="text-cyan-200">월별로 보기 →</Link></div>
         </div>
         {posts.length ? (
           <PostList posts={postsOnPage(posts, 1)} />

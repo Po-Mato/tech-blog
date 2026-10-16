@@ -39,6 +39,7 @@ export default async function ArchivePage({ params }: { params: Promise<{ page: 
         <p className="mt-3 text-white/60">
           전체 {posts.length}편 · {current} / {pageCount(posts.length)}페이지
         </p>
+        <Link href="/archive/month/" className="mt-5 inline-block text-cyan-200">월별로 보기 →</Link>
       </header>
       <PostList posts={postsOnPage(posts, current)} />
       <Pagination current={current} total={pageCount(posts.length)} />

@@ -109,3 +109,10 @@ tags: ["AI Agents", "Software Architecture"]
 8월 29일 글의 전체 Go 프로그램과 테스트는 public/examples/stream-lab.go 및 stream-lab_test.go와 일치해야 한다. pnpm test는 임시 폴더에서 정상 실행·4개 종료 검사·race 반복·두 결함 변형의 실패를 확인한다. Go 1.25.7과 race 지원 C 컴파일러가 필요하며 CI도 해당 Go 버전을 설치한다. 도구가 없으면 실패를 건너뛰지 않는다.
 
 `node scripts/check-stream-lab.mjs <사이트 URL>`은 두 파일을 내려받아 독립 실행·race 검사하고 390/1280px 본문 일치·목차·줄바꿈·복사·파일 링크·넘침을 확인한다. 복사 검사는 격리 clipboard 대체 객체를 사용한다.
+
+
+## 월별 지난 글
+
+홈·기존 지난 글에서 /archive/month/로 들어가 실제 발행 월과 글 수를 선택한다. /archive/month/YYYY-MM/은 해당 월의 공개 글을 최신순으로 제공한다. 기존 /archive/N/과 글 주소는 유지한다. 월 목록과 글 링크는 서버 HTML에 포함되며 월 선택에 저장소나 검색 쿼리는 사용하지 않는다.
+
+`node scripts/check-month-archive.mjs <사이트 URL>`은 모든 월의 글 합계·서버 링크·canonical·사이트맵·없는 월 404, 390/1280px 홈 진입·키보드 선택·글 이동·뒤로/새로고침·연도 경계·전체 목록 복귀를 검사한다.

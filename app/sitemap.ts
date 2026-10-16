@@ -1,9 +1,12 @@
 import type { MetadataRoute } from "next";
 
-import { getPostSlugs, getPostBySlug } from "../src/lib/posts";
+import { getPostSlugs, getPostBySlug, getAllPosts } from "../src/lib/posts";
 import { getPortfolioSlugs, getPortfolioBySlug } from "../src/lib/portfolio";
 import { buildSitemap } from "../src/lib/sitemap";
 import { getAllTags } from "../src/lib/tags";
+
+import { groupByMonth, monthHref } from "../src/lib/month-archive";
+import { site } from "../src/lib/site";
 
 export const dynamic = "force-static";
 
@@ -32,5 +35,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   );
 
-  return buildSitemap({ posts, portfolio, tags });
+  return [...buildSitemap({ posts, portfolio, tags }), {url: `${site.url}/archive/month/`}, ...groupByMonth(await getAllPosts()).map(g=>({url: `${site.url}${monthHref(g.month)}`}))];
 }
