@@ -1,0 +1,60 @@
+import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+const base = process.argv[2] || 'http://127.0.0.1:8811';
+const session = `contract-lab-${process.pid}`;
+const expected = readFileSync('public/examples/contract-lab.py', 'utf8');
+function browser(...args) {
+  const response = JSON.parse(execFileSync('agent-browser', ['--session', session, '--json', ...args], { encoding: 'utf8', timeout: 45000 }));
+  assert(response.success, response.error);
+  return response.data;
+}
+const evaluate = js => browser('eval', js).result;
+try {
+  const response = await fetch(new URL('/examples/contract-lab.py', base));
+  assert(response.ok);
+  const downloadsInBrowser = response.headers.get('content-type')?.includes('application/octet-stream');
+  const downloaded = await response.text();
+  assert.equal(downloaded, expected);
+  const directory = mkdtempSync(join(tmpdir(), 'published-lab-'));
+  try {
+    writeFileSync(join(directory, 'contract-lab.py'), downloaded);
+    const output = execFileSync('python3', ['-I', 'contract-lab.py'], {cwd:directory,encoding:'utf8',timeout:5000,stdio:['ignore','pipe','pipe']});
+    assert.equal(output, '');
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+  for (const width of [390, 1280]) {
+    browser('set', 'viewport', String(width), '844');
+    browser('open', new URL('/posts/2026-09-01-proactive-update/', base).href);
+    browser('wait', '.code-copy-toolbar button');
+    const toc = evaluate(`Array.from(document.querySelectorAll('.post-toc a')).find(a => a.textContent.includes('로컬 실습:')).getAttribute('href')`);
+    browser('click', `.post-toc a[href="${toc}"]`);
+    assert.equal(evaluate('location.hash'), toc);
+    assert(evaluate('document.body.scrollWidth <= innerWidth'));
+    const block = evaluate(`Array.from(document.querySelectorAll('pre > code')).findIndex(c => c.textContent.includes('def validate_health('))`);
+    assert(block >= 0);
+    assert.equal(evaluate(`document.querySelectorAll('pre > code')[${block}].textContent`), expected);
+    // Isolated clipboard test double validates the exact text passed by the UI.
+    evaluate(`Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async text => { window.__copied = text; } } });`);
+    browser('click', `button[aria-label="${block + 1}번째 코드 블록 복사"]`);
+    assert.equal(evaluate('window.__copied'), expected);
+    assert(evaluate(`document.querySelectorAll('.code-copy-toolbar [role="status"]')[${block}].textContent.includes('복사했습니다')`));
+    browser('click', `.post-toc a[href="${toc}"]`);
+    browser('screenshot', `/tmp/contract-lab-${width}.png`);
+    if (downloadsInBrowser) {
+      const downloadDir = mkdtempSync(join(tmpdir(), 'browser-lab-'));
+      try {
+        const target = join(downloadDir, 'contract-lab.py');
+        browser('download', 'a[href="/examples/contract-lab.py"]', target);
+        assert.equal(readFileSync(target, 'utf8'), expected);
+      } finally { rmSync(downloadDir, { recursive: true, force: true }); }
+    } else {
+      browser('click', 'a[href="/examples/contract-lab.py"]');
+      browser('wait', '--url', new URL('/examples/contract-lab.py', base).href);
+      assert(evaluate("document.body.textContent.includes('def validate_health(')"));
+    }
+  }
+  console.log('공개 예제 다운로드·독립 실행·본문 일치·390/1280px 목차·복사·파일 링크·가로 넘침 검사 통과');
+} finally { browser('close'); }

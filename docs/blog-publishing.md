@@ -116,3 +116,6 @@ tags: ["AI Agents", "Software Architecture"]
 홈·기존 지난 글에서 /archive/month/로 들어가 실제 발행 월과 글 수를 선택한다. /archive/month/YYYY-MM/은 해당 월의 공개 글을 최신순으로 제공한다. 기존 /archive/N/과 글 주소는 유지한다. 월 목록과 글 링크는 서버 HTML에 포함되며 월 선택에 저장소나 검색 쿼리는 사용하지 않는다.
 
 `node scripts/check-month-archive.mjs <사이트 URL>`은 모든 월의 글 합계·서버 링크·canonical·사이트맵·없는 월 404, 390/1280px 홈 진입·키보드 선택·글 이동·뒤로/새로고침·연도 경계·전체 목록 복귀를 검사한다.
+
+## 응답 계약 실습
+9월 1일 글의 Python 전체 코드와 public/examples/contract-lab.py는 동일해야 한다. pnpm test는 독립 실행·오류 fixture·상태 코드만 확인하는 결함 변형의 실패를 검사한다. node scripts/check-contract-lab.mjs <사이트 URL>은 다운로드 독립 실행·본문 일치·390/1280px 목차·복사·파일 이동을 확인한다. 복사는 격리 clipboard 대체 객체를 사용한다. 실제 HTTP 통합 테스트가 아닌 로컬 응답 fixture 실습이다.
