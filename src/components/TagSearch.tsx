@@ -1,17 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState, useSyncExternalStore } from 'react';
+import { useRef, useSyncExternalStore } from 'react';
 import { filterTagNames } from '../lib/tag-search';
+import { readTagQuery, tagQueryHref } from '../lib/tag-query';
 
-const subscribe = () => () => {};
+const subscribe = (notify: () => void) => {
+  window.addEventListener('popstate', notify);
+  window.addEventListener('tag-query-change', notify);
+  return () => {
+    window.removeEventListener('popstate', notify);
+    window.removeEventListener('tag-query-change', notify);
+  };
+};
+const currentQuery = () => readTagQuery(window.location.search);
+const serverQuery = () => '';
+function updateQuery(query: string, push = false) {
+  const href = tagQueryHref(window.location.href, query);
+  if (href === location.pathname + location.search + location.hash) return;
+  if (push) window.history.pushState(window.history.state, '', href);
+  else window.history.replaceState(window.history.state, '', href);
+  window.dispatchEvent(new Event('tag-query-change'));
+}
 const clientReady = () => true;
 const serverReady = () => false;
 
 type TagEntry = { tag: string; count: number; href: string };
 
 export default function TagSearch({ tags }: { tags: TagEntry[] }) {
-  const [query, setQuery] = useState('');
+  const query = useSyncExternalStore(subscribe, currentQuery, serverQuery);
   const input = useRef<HTMLInputElement>(null);
   const ready = useSyncExternalStore(subscribe, clientReady, serverReady);
   const matches = filterTagNames(tags, query);
@@ -22,13 +39,13 @@ export default function TagSearch({ tags }: { tags: TagEntry[] }) {
         <label htmlFor="tag-name-query" className="block text-sm font-medium text-white/85">태그 이름 검색</label>
         <div className="mt-2 flex gap-2">
           <input id="tag-name-query" ref={input} type="search" value={query}
-            onChange={event => setQuery(event.target.value)} aria-controls="tag-results" aria-describedby="tag-search-help"
+            onChange={event => updateQuery(event.target.value)} aria-controls="tag-results" aria-describedby="tag-search-help"
             placeholder="예: cloud, TypeScript, CI/CD"
             className="min-w-0 flex-1 rounded-xl border border-white/20 bg-black/30 px-4 py-3 text-white focus-visible:outline-2 focus-visible:outline-cyan-200" />
-          <button type="button" onClick={() => { setQuery(''); input.current?.focus(); }}
+          <button type="button" onClick={() => { if (query) updateQuery('', true); input.current?.focus(); }}
             className="shrink-0 rounded-xl border border-white/20 px-4 py-3 text-sm text-cyan-100 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-cyan-200">초기화</button>
         </div>
-        <p id="tag-search-help" className="mt-2 text-sm text-white/60">태그 이름 일부를 입력해 관심 주제를 찾아보세요.</p>
+        <p id="tag-search-help" className="mt-2 text-sm text-white/60">태그 이름 일부를 입력해 관심 주제를 찾아보세요. 검색 조건은 주소에 저장되어 공유하거나 다시 열 수 있습니다.</p>
       </div>
       <p role="status" aria-atomic="true" className="mb-4 text-sm text-white/70">전체 {tags.length}개 중 {matches.length}개</p>
       {matches.length === 0 ? <p className="mb-4 rounded-xl border border-white/15 p-5 text-white/80">일치하는 태그가 없습니다. 검색어를 바꾸거나 초기화해 주세요.</p> : null}

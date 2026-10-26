@@ -119,3 +119,7 @@ tags: ["AI Agents", "Software Architecture"]
 
 ## 응답 계약 실습
 9월 1일 글의 Python 전체 코드와 public/examples/contract-lab.py는 동일해야 한다. pnpm test는 독립 실행·오류 fixture·상태 코드만 확인하는 결함 변형의 실패를 검사한다. node scripts/check-contract-lab.mjs <사이트 URL>은 다운로드 독립 실행·본문 일치·390/1280px 목차·복사·파일 이동을 확인한다. 복사는 격리 clipboard 대체 객체를 사용한다. 실제 HTTP 통합 테스트가 아닌 로컬 응답 fixture 실습이다.
+
+## 태그 이름 검색 주소
+
+`/tags/?q=cloud`로 같은 태그 후보를 공유한다. 중복 q는 첫 값을 읽고 입력 시 하나로 정리한다. 입력은 현재 이력을 교체하며 값이 있는 상태의 초기화만 새 이력을 추가한다. 뒤로/앞으로 이동과 새로고침은 URL의 값을 복원한다. 다른 쿼리와 fragment는 보존한다. 서버 전체 태그 링크는 그대로 유지한다. 회귀 검사는 `node scripts/check-tag-query.mjs <base-url>`과 기존 `check-tag-search.mjs`로 실행한다.
