@@ -15,7 +15,7 @@ try{
   b('reload');ready();value('cloud');
   b('fill',input,'CI/CD');value('CI/CD');assert.equal(e("new URLSearchParams(location.search).get('q')"),'CI/CD');
   assert.equal(e("new URLSearchParams(location.search).get('x')"),'1');assert.equal(e('location.hash'),'#tag-results');
-  const href=e("document.querySelector('#tag-results a').getAttribute('href')");b('click',`#tag-results a[href="${href}"]`);b('back');ready();value('CI/CD');
+  const href=e("document.querySelector('#tag-results a').getAttribute('href')");b('click',`#tag-results a[href="${href}"]`);b('wait','--fn',`document.querySelector('h1')?.textContent.includes('CI/CD') && decodeURIComponent(location.pathname)==='/tags/CI/CD/'`);b('back');ready();value('CI/CD');
   const n=e('history.length');b('click','section[aria-label="태그 찾기"] button');value('');assert(e('history.length')>=n);assert(e(`document.activeElement===document.querySelector('${input}')`));
   b('back');value('CI/CD');b('forward');value('');const cleared=e('history.length');b('click','section[aria-label="태그 찾기"] button');assert.equal(e('history.length'),cleared);
   for(const q of [' 한글 / % & + ','cloud']){b('fill',input,q);assert.equal(e("new URLSearchParams(location.search).get('q')"),q);b('reload');ready();value(q);}
