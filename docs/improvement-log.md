@@ -504,3 +504,8 @@
 - 로컬 Python 3.14.3에서 5개 Python 테스트와 실패 전파를 제거한 결함 변형 실패를 검증했다. lint·98개 테스트·build·export 통과. CONTENT-007 라우팅 정책 후보를 현재 원문 근거로 추가했다. 공개 검증 전 완료로 집계하지 않는다.
 - 유지보수: 시작 공개 SHA df8c2c0 일치, 홈 연결 내부 URL 46개 정상·RSS 최신 9월 2일·사이트맵 644개 확인. 링크 점검은 홈 연결 범위다.
 - 공개 태그 조건·검색 복구 회귀 390/1280px 통과. 로컬 실습 다운로드·독립 실행·본문 일치·목차·줄바꿈·원문 복사·파일 링크·가로 넘침 검증 통과, 두 크기 실제 화면 확인. 복사는 격리 clipboard 대체로 확인했다. 당일 미추적 생성 게임 파일만 제외·제거한다.
+
+### 10월 28일 작업 상태 실습 공개 완료
+- 소스 3d9a10313e76b8f2b6df637ed939bba8e7baa038의 [Actions 성공](https://github.com/Po-Mato/tech-blog/actions/runs/40692838417), [Pages 성공](https://github.com/Po-Mato/Po-Mato.github.io/actions/runs/40693114817)을 확인했다. 배포 저장소 29978b101bb1df0d46a6c25cfdbd2ae9732e10d5의 소스 참조와 공개 build-info가 일치했다.
+- [공개 글](https://po-mato.github.io/posts/2026-08-31-proactive-update/)의 다운로드 Python 독립 실행·본문 코드 동일성·390/1280px 목차·줄바꿈·원문 복사·파일 링크·가로 넘침 검증이 통과했고 실제 화면을 확인했다. 복사는 격리 clipboard 대체다.
+- CONTENT-005 완료. 신규 실습 성과와 추세 단정 교정을 구분하며 미완료 후보 5개를 유지한다. 다음은 CONTENT-006 재시도 예산 실습이다. 완료 기록 커밋의 최종 배포·공개 SHA·대표 동작은 실행 보고에 남긴다.
