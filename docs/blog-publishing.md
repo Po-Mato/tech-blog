@@ -123,3 +123,6 @@ tags: ["AI Agents", "Software Architecture"]
 ## 태그 이름 검색 주소
 
 `/tags/?q=cloud`로 같은 태그 후보를 공유한다. 중복 q는 첫 값을 읽고 입력 시 하나로 정리한다. 입력은 현재 이력을 교체하며 값이 있는 상태의 초기화만 새 이력을 추가한다. 뒤로/앞으로 이동과 새로고침은 URL의 값을 복원한다. 다른 쿼리와 fragment는 보존한다. 서버 전체 태그 링크는 그대로 유지한다. 회귀 검사는 `node scripts/check-tag-query.mjs <base-url>`과 기존 `check-tag-search.mjs`로 실행한다.
+
+## 작업 상태·실패 전파 실습
+8월 31일 본문 Python 코드와 public/examples/task-lab.py는 동일해야 한다. pnpm test는 독립 실행·5개 Python 검사·실패 전파를 제거한 결함 변형 검출을 포함한다. node scripts/check-task-lab.mjs <base-url>은 다운로드 독립 실행·본문 일치·390/1280px 목차·줄바꿈·복사·파일 이동을 확인한다. 복사는 격리 clipboard 대체이며 실제 외부 작업 실행은 없다.
