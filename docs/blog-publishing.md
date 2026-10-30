@@ -126,3 +126,6 @@ tags: ["AI Agents", "Software Architecture"]
 
 ## 작업 상태·실패 전파 실습
 8월 31일 본문 Python 코드와 public/examples/task-lab.py는 동일해야 한다. pnpm test는 독립 실행·5개 Python 검사·실패 전파를 제거한 결함 변형 검출을 포함한다. node scripts/check-task-lab.mjs <base-url>은 다운로드 독립 실행·본문 일치·390/1280px 목차·줄바꿈·복사·파일 이동을 확인한다. 복사는 격리 clipboard 대체이며 실제 외부 작업 실행은 없다.
+
+## 재시도 예산 실습
+8월 24일 본문 Python 코드와 public/examples/retry-lab.py는 동일해야 한다. pnpm test는 독립 실행·8개 Python 검사·예산 초과 결함 변형 검출을 포함한다. node scripts/check-retry-lab.mjs <base-url>은 다운로드 독립 실행·본문 동일성·390/1280px 목차·줄바꿈·복사·파일 이동을 검사한다. 복사는 격리 clipboard 대체이며 실제 외부 도구 호출·시간 제한·실행 중 강제 취소를 제공하지 않는다.
